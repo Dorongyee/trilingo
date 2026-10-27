@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="28" fill="#2563eb"/>
+  <text x="64" y="58" font-size="40" text-anchor="middle" font-family="sans-serif" font-weight="700" fill="#fff">文A</text>
+  <text x="64" y="104" font-size="38" text-anchor="middle" font-family="sans-serif" font-weight="700" fill="#fff">あ</text>
+</svg>
