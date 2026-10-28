@@ -9,3 +9,8 @@
 - 알려진 제약: 유튜브 ID 중 光年之外(KqVN10ICaE0)·小幸运(_sQSXwdtxlY)은 공식 채널 여부 미확인 → 재생 안 되면 data/songs.js의 yt 값만 교체. Firestore 보안은 가족 코드 기반(로그인 없음).
 - 배포: https://github.com/Dorongyee/trilingo → https://dorongyee.github.io/trilingo/ (GitHub Pages, main 루트). 배포 주소에서 프로필 생성·노래 화면 유튜브 임베드(APT.) 재생 가능 확인. 9곡 영상 ID 모두 oEmbed 200 응답.
 - 수정: header backdrop-filter 가 하단 고정 내비를 헤더 안에 가두는 버그 → 제거. html scroll-padding-bottom 추가.
+
+## 2026-10-28 · v0.2 Firebase 가족 동기화
+- Firebase 프로젝트 trilingo-2eaf8(사용자가 콘솔에서 생성; CLI 생성은 약관 미동의로 403), 웹 앱 trilingo-web 등록, Firestore (default) 생성, firestore.rules 배포(firebase deploy --only firestore:rules).
+- js/config.js 에 firebaseConfig + familyCode 기입. 같은 이름으로 프로필 생성 시 기존 기록에 자동 연결(app.js).
+- 수정 전 버전: backup/2026-10-28-v0.1/

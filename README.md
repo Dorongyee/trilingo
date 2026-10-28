@@ -36,29 +36,16 @@ WORKLOG.md          작업 일지
 - 상황 카테고리 추가: `data/words.js` 상단 `TL_SITUATIONS`에 항목 추가 후 그 키로 단어/문장을 넣으면 됩니다.
 
 ## 저장 방식
-기본은 **기기(브라우저)별 localStorage** 저장입니다. 설정 없이 바로 쓸 수 있지만, 휴대폰과 PC 기록이 따로 쌓입니다.
-- 임시 공유: 설정 > 백업 내보내기 / 가져오기(JSON)
+**Firebase Firestore 동기화가 켜져 있습니다** (프로젝트 `trilingo-2eaf8`, 가족 코드는 `js/config.js`).
+- 어느 기기에서든 같은 이름으로 "새 학습자"를 만들면 기존 기록에 자동 연결됩니다. 홈 화면에는 가족 전체 프로필이 보이므로 자기 이름을 누르기만 하면 됩니다.
+- 쓰기는 2.5초 디바운스, 사용자당 문서 1개 → 무료 한도(일 쓰기 2만/읽기 5만)의 1% 수준.
+- 보안 규칙은 `firestore.rules` (`firebase deploy --only firestore:rules`로 배포). 로그인 없이 가족 코드로만 구분하므로 코드를 외부에 올리지 마세요(이 저장소가 공개라면 코드가 노출됩니다 → 가족 학습 기록 외 민감 정보는 저장되지 않음).
+- 백업: 설정 > 백업 파일 내보내기 / 가져오기(JSON)
 
-### 가족 기록 동기화(Firebase) 설정 — 약 5분, 무료
-1. https://console.firebase.google.com 에서 프로젝트 추가(애널리틱스 끔)
-2. 왼쪽 메뉴 **빌드 > Firestore Database > 데이터베이스 만들기** → 위치 `asia-northeast3(서울)` → **프로덕션 모드**로 시작
-3. **규칙** 탭에 아래 내용을 붙여 넣고 게시
-   ```
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /families/{family}/users/{user} {
-         allow read, write: if request.resource == null || request.resource.size() < 200000;
-       }
-     }
-   }
-   ```
-   (로그인 없이 "가족 코드"로만 구분하는 단순 구조입니다. 가족 코드를 길고 추측 어려운 값으로 쓰세요.)
-4. 프로젝트 설정(톱니) > 일반 > **내 앱 > 웹 앱(</>) 추가** → 표시되는 `firebaseConfig` 객체를 복사
-5. `js/config.js`의 `firebase: null`을 그 객체로 바꾸고, `familyCode`를 원하는 비밀 문자열로 변경
-6. 커밋·푸시하면 끝. 홈 화면 하단에 "☁️ 가족 기록 동기화 중"이 뜨면 성공
-
-무료 한도(일 쓰기 2만/읽기 5만, 1GB)를 아끼도록 사용자 1명 = 문서 1개, 쓰기 디바운스(2.5초), 읽기는 사용자 선택 시 1회로 설계했습니다. 가족 5명이 매일 써도 한도의 1% 수준입니다.
+### 다른 Firebase 프로젝트로 옮기려면
+1. https://console.firebase.google.com 에서 프로젝트 추가 → Firestore Database 생성
+2. `firebase login` 후 `.firebaserc`의 프로젝트 ID 변경 → `firebase deploy --only firestore:rules`
+3. 프로젝트 설정 > 내 앱 > 웹 앱의 `firebaseConfig`를 `js/config.js`에 붙여 넣기
 
 ## 로컬에서 열기
 `index.html`을 더블클릭하면 그대로 열립니다(서버 불필요). 유튜브 임베드는 `file://`에서 막힐 수 있으니 배포 주소에서 확인하세요.

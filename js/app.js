@@ -537,7 +537,11 @@
       const name = (fd.get("name") || "").trim(); if (!name) return;
       const langs = fd.getAll("langs"); if (!langs.length) return toast("언어를 하나 이상 선택하세요");
       if (f.dataset.edit === "1") { Object.assign(S.user, { name, avatar: fd.get("avatar"), langs }); await Store.saveUser(S.user); toast("저장했어요"); go("/settings"); }
-      else { const u = { id: uid(), name, avatar: fd.get("avatar"), langs, show: { ...DEFAULT_SHOW }, created: Date.now() }; await Store.saveUser(u); S.users = await Store.getUsers(); if (!S.users.some((x) => x.id === u.id)) S.users.push(u); await pickUser(u.id); go("/dash"); }
+      else {
+        // 같은 이름이 가족 목록에 이미 있으면(다른 기기에서 만든 프로필) 새로 만들지 않고 그 기록에 연결
+        const existing = S.users.find((x) => (x.name || "").trim().toLowerCase() === name.toLowerCase());
+        if (existing) { toast(`"${existing.name}" 기존 기록을 이어서 사용해요`); await pickUser(existing.id); go("/dash"); return; }
+        const u = { id: uid(), name, avatar: fd.get("avatar"), langs, show: { ...DEFAULT_SHOW }, created: Date.now() }; await Store.saveUser(u); S.users = await Store.getUsers(); if (!S.users.some((x) => x.id === u.id)) S.users.push(u); await pickUser(u.id); go("/dash"); }
     }
     if (f.id === "test-form") {
       e.preventDefault();
