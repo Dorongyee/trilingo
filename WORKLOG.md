@@ -14,3 +14,4 @@
 - Firebase 프로젝트 trilingo-2eaf8(사용자가 콘솔에서 생성; CLI 생성은 약관 미동의로 403), 웹 앱 trilingo-web 등록, Firestore (default) 생성, firestore.rules 배포(firebase deploy --only firestore:rules).
 - js/config.js 에 firebaseConfig + familyCode 기입. 같은 이름으로 프로필 생성 시 기존 기록에 자동 연결(app.js).
 - 수정 전 버전: backup/2026-10-28-v0.1/
+- 검증(배포 주소, 독립 브라우저 세션 2개): A에서 "동기화테스트" 생성·단어 3개 학습 → Firestore 문서 생성(XP 15) 확인 → B 홈에 가족 목록 표시, 같은 이름으로 생성 시 같은 id(afjf74f8fh)·XP 15·학습 3개로 연결됨. 테스트 문서는 삭제. 콘솔의 Listen 채널 404/400은 WebChannel 재접속 노이즈(정상).
