@@ -364,7 +364,7 @@
   // ───────────────────────── 화면: 노래
   function viewSongs() {
     const groups = S.user.langs.map((l) => ({ l, songs: TL_SONGS.filter((s) => s.lang === l) })).filter((g) => g.songs.length);
-    return `${back("#/dash", "홈")}<h1>🎵 노래로 배우기</h1><p class="muted">유튜브 원곡을 보면서 가사 속 문법·단어·관용어구를 익혀요. 가사는 줄마다 나열되고, 색칠된 줄을 누르면 설명이 열려요. 전체 가사는 저작권 때문에 기본 포함되지 않으니 가족 중 한 명이 한 번 붙여 넣으면 모두에게 공유돼요.</p>
+    return `${back("#/dash", "홈")}<h1>🎵 노래로 배우기</h1><p class="muted">유튜브 원곡을 보면서 가사 속 문법·단어·관용어구를 익혀요. 가사는 줄마다 나열되고, 색칠된 줄을 누르면 설명이 열려요. 전체 가사는 노래 화면에서 한 번 붙여 넣으면 돼요.</p>
       ${groups.map((g) => `<h2>${LANGS[g.l].flag} ${LANGS[g.l].name}</h2><div class="song-grid">${g.songs.map((s) => { const sp = (S.prog.songs[s.id] || {}).lines || {}; const n = Object.keys(sp).length;
         return `<a class="card song" href="#/songs/${s.id}"><img loading="lazy" src="https://i.ytimg.com/vi/${s.yt}/mqdefault.jpg" alt=""><div class="song-body"><b>${esc(s.title)}</b><small>${esc(s.artist)} · ${s.year}</small><small class="muted">레벨 ${s.lv} · ${n}/${s.lines.length} 구절 학습</small>${bar(n, s.lines.length)}</div></a>`; }).join("")}</div>`).join("")}`;
   }
@@ -436,10 +436,10 @@
         if (ai < 0) return `<div class="lyric-line plain" lang="${L.lang}">${esc(t)}</div>`;
         matched++; return lyricRow(s, id, String(li), t, ai);
       }).join("")}</div>
-      <p class="muted small">색칠된 줄을 누르면 설명이 열려요. 해설 있는 줄 ${matched}개${shared.by ? ` · ${esc(shared.by)} 님이 가사 등록` : ""}</p>`;
+      <p class="muted small">색칠된 줄을 누르면 설명이 열려요. 해설 있는 줄 ${matched}개</p>`;
     } else {
       body = `<div class="card lyrics">${s.lines.map((line, i) => lyricRow(s, id, "a" + i, line.t, i)).join("")}</div>
-      <p class="muted small">지금은 핵심 구절만 보여요. 아래에 전체 가사를 붙여 넣으면 가족 모두에게 가사가 순서대로 표시되고, 해설이 있는 줄은 자동으로 색칠돼요.</p>`;
+      <p class="muted small">지금은 핵심 구절만 보여요. 아래에 전체 가사를 붙여 넣으면 가사가 순서대로 표시되고, 해설이 있는 줄은 자동으로 색칠돼요.</p>`;
     }
     return `${back("#/songs", "노래")}
       <div class="song-head"><h1>${esc(s.title)}</h1><div class="muted">${L.flag} ${esc(s.artist)} · ${s.year} · 레벨 ${s.lv}</div></div>
@@ -450,10 +450,10 @@
       <div class="lyrics-head"><h2>가사 · 학습 ${learnedN}/${s.lines.length}</h2><div class="legend"><mark class="hl grammar">문법</mark><mark class="hl vocab">단어</mark><mark class="hl idiom">관용어구</mark></div></div>
       ${body}
       <details class="card lyrics-edit" ${text.trim() ? "" : "open"}>
-        <summary>${text.trim() ? "✏️ 가사 수정" : "📋 전체 가사 붙여 넣기 (가족 공유)"}</summary>
-        <p class="muted small">가사 사이트에서 복사해 한 줄에 한 소절씩 붙여 넣으세요. 저장하면 가족 모두의 화면에 반영돼요.</p>
+        <summary>${text.trim() ? "✏️ 가사 수정" : "📋 전체 가사 붙여 넣기"}</summary>
+        <p class="muted small">가사 사이트에서 복사해 한 줄에 한 소절씩 붙여 넣으세요. <a class="link" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title + " " + s.artist + " 가사")}">🔎 가사 검색 ↗</a></p>
         <textarea id="lyrics-memo" rows="12" placeholder="가사 붙여 넣기…">${esc(text || sp.lyrics || "")}</textarea>
-        <div class="actions"><button class="btn primary" data-act="song-save-lyrics" data-song="${id}">저장 (가족 공유)</button></div>
+        <div class="actions"><button class="btn primary" data-act="song-save-lyrics" data-song="${id}">저장</button></div>
       </details>`;
   }
 
@@ -586,7 +586,7 @@
       case "test-retry-wrong": { const ids = S.test.qs.filter((q) => !q.ok).map((q) => q.item.id); startTest({ ...S.test.opts, ids, scope: "all", count: "all", key: S.test.opts.key }); break; }
       case "test-again": startTest({ ...S.test.opts }); break;
       case "song-line": { const id = el.dataset.song, i = el.dataset.idx; const sp = (S.prog.songs[id] = S.prog.songs[id] || { lines: {}, lyrics: "", lyricsAt: 0 }); if (sp.lines[i]) delete sp.lines[i]; else { sp.lines[i] = Date.now(); addXp(XP.songLine); toast(`+${XP.songLine} XP`); } save(); render(); break; }
-      case "song-save-lyrics": { const id = el.dataset.song; const text = document.getElementById("lyrics-memo").value; await Store.saveLyrics(id, text, S.user.name); if (S.songUI) S.songUI.open = null; toast(text.trim() ? "가사를 저장했어요 (가족 공유)" : "가사를 비웠어요"); render(); break; }
+      case "song-save-lyrics": { const id = el.dataset.song; const text = document.getElementById("lyrics-memo").value; await Store.saveLyrics(id, text, S.user.name); if (S.songUI) S.songUI.open = null; toast(text.trim() ? "가사를 저장했어요" : "가사를 비웠어요"); render(); break; }
       case "lyric-open": { const k = el.dataset.key; S.songUI.open = S.songUI.open === k ? null : k; render(); break; }
       case "export": { const data = Store.exportAll(); const blob = new Blob([JSON.stringify(data, null, 1)], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `trilingo-backup-${new Date().toISOString().slice(0, 10)}.json`; a.click(); URL.revokeObjectURL(a.href); break; }
       case "switch-user": S.user = null; S.prog = null; break;
