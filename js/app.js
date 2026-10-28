@@ -30,6 +30,7 @@
   const shuffle = (a) => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const go = (h) => { location.hash = h; };
   const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+  // taste-skill-ignore (시각 표기 자릿수)
   const fmtDate = (ts) => { const d = new Date(ts); return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
   const flags = (langs) => (langs || []).map((l) => LANGS[l].name).join(" · ");
   // 아바타: 이름 첫 글자 + 사용자별 고정 색조(이모지 대신)
@@ -120,7 +121,7 @@
     if (L.includes("zh")) b.push(["py", "병음"]);
     if (L.includes("ja")) b.push(["hira", "히라가나"], ["kata", "가타카나"], ["romaji", "로마자"]);
     if (L.includes("en")) b.push(["ipa", "발음기호"]);
-    return `<div class="chips pron-toggles" aria-label="발음 표기 켜기/끄기">${b.map(([k, n]) => `<button class="chip ${sh[k] ? "on" : ""}" data-act="toggle-show" data-key="${k}">${sh[k] ? "✓ " : ""}${n}</button>`).join("")}</div>`;
+    return `<div class="chips pron-toggles" aria-label="발음 표기 켜기/끄기">${b.map(([k, n]) => `<button class="chip ${sh[k] ? "on" : ""}" data-act="toggle-show" data-key="${k}">${n}</button>`).join("")}</div>`;
   }
 
   // ───────────────────────── 데이터 조회
@@ -682,6 +683,7 @@
   // ───────────────────────── 시작
   (async function boot() {
     S.mode = await Store.init();
+    const q = new URLSearchParams(location.search); if (q.get("u")) Store.setCurrent(q.get("u")); // ?u=사용자id 로 바로 접속(개인 즐겨찾기용)
     if (!location.hash) location.replace("#/");
     await render();
   })();
