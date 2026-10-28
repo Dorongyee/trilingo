@@ -291,3 +291,14 @@ mark.hl.idiom { background: var(--idiom-bg); border-bottom: 2px solid var(--idio
   .study-card, .question, .feedback, .study-nav, .form, .result { max-width: 720px; }
   .user-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 }
+
+/* 테스트 설정: 데스크톱에서 폼 + 범위 현황 패널 */
+.two-col { display: grid; gap: 16px; }
+.side h2 { margin-top: 0; }
+.side h2 + .list { margin: 0 calc(-1 * var(--pad)); }
+.kv { display: grid; margin-bottom: 8px; }
+.kv div { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.kv div:last-child { border-bottom: 0; }
+.kv span { color: var(--muted); font-size: 14px; }
+.kv b { font-weight: 500; font-size: 22px; }
+@media (min-width: 1024px) { .two-col { grid-template-columns: minmax(0, 720px) 1fr; gap: 24px; align-items: start; } .two-col .form { max-width: none; } }

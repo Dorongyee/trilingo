@@ -268,7 +268,9 @@
     const preKey = S.preset && S.preset.type === type && S.preset.by === by ? S.preset.key : "all";
     const counts = (key) => { const items = pool(type, by, key); return { all: items.length, learned: learnedCount(items), weak: items.filter((i) => isWeak(i.id)).length }; };
     const c0 = counts(preKey);
-    return `${back("#/test", "테스트")}<h1>${BY_NAME[by]} ${TYPE_NAME[type]} 테스트</h1>
+    const hist = (S.prog.tests || []).filter((t) => t.type === type && t.by === by).slice(-3).reverse();
+    const aside = `<aside class="card side"><h2>선택한 범위</h2><div class="kv"><div><span>전체</span><b data-cnt="all">${c0.all}</b></div><div><span>학습 완료</span><b data-cnt="learned">${c0.learned}</b></div><div><span>취약 항목</span><b data-cnt="weak">${c0.weak}</b></div></div>${hist.length ? `<h2>최근 ${BY_NAME[by]} ${TYPE_NAME[type]} 테스트</h2><div class="list">${hist.map(testRow).join("")}</div>` : `<p class="muted small">이 유형의 테스트 기록이 아직 없어요.</p>`}</aside>`;
+    return `${back("#/test", "테스트")}<h1>${BY_NAME[by]} ${TYPE_NAME[type]} 테스트</h1><div class="two-col">
       <form id="test-form" class="card form" data-type="${type}" data-by="${by}">
         <label>범위<select name="key" id="t-key">${[{ key: "all", name: "전체" }, ...cats].map((c) => `<option value="${c.key}" ${c.key === preKey ? "selected" : ""}>${c.name}</option>`).join("")}</select></label>
         <div class="field"><span>출제 대상</span><div class="radio-col" id="t-scope">
@@ -283,7 +285,7 @@
           <label class="check pill"><input type="radio" name="mode" value="type" > 직접 입력 (XP 2배)</label>
         </div></div>
         <button class="btn primary big" type="submit">시작</button>
-      </form>`;
+      </form>${aside}</div>`;
   }
 
   function buildTest(o) {
@@ -660,7 +662,7 @@
     if (t.id === "t-key") { // 범위 바꾸면 출제 대상 개수 갱신
       const f = t.closest("form"); const items = pool(f.dataset.type, f.dataset.by, t.value);
       const cnt = { all: items.length, learned: learnedCount(items), weak: items.filter((i) => isWeak(i.id)).length };
-      f.querySelectorAll("[data-cnt]").forEach((el) => (el.textContent = cnt[el.dataset.cnt]));
+      document.querySelectorAll("[data-cnt]").forEach((el) => (el.textContent = cnt[el.dataset.cnt]));
       f.querySelectorAll('input[name="scope"]').forEach((r) => { r.disabled = cnt[r.value] === 0; if (r.disabled && r.checked) f.querySelector('input[name="scope"][value="all"]').checked = true; });
     }
     if (t.id === "import-file" && t.files[0]) {
