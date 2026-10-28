@@ -156,7 +156,7 @@
   function viewHome() {
     const cards = S.users.map((u) => {
       const L = levelInfo(Store.peekProgress(u.id).xp);
-      return `<button class="user-card" data-act="pick-user" data-id="${u.id}">${avatarHtml(u, "big")}<b>${esc(u.name)}</b><small>Lv.${L.lv} ${L.title}</small><small>${flags(u.langs)}</small></button>`;
+      return `<button class="user-card" data-act="pick-user" data-id="${u.id}">${avatarHtml(u, "big")}<b>${esc(u.name)}</b><small>Lv.${L.lv} ${L.title}</small><small>${flags(u.langs)}</small>${u.updated ? `<small>최근 활동 ${fmtDate(u.updated).split(" ")[0]}</small>` : ""}</button>`;
     }).join("");
     return `
       <section class="hero"><h1>트라이링고</h1></section>
@@ -269,7 +269,7 @@
     const counts = (key) => { const items = pool(type, by, key); return { all: items.length, learned: learnedCount(items), weak: items.filter((i) => isWeak(i.id)).length }; };
     const c0 = counts(preKey);
     const hist = (S.prog.tests || []).filter((t) => t.type === type && t.by === by).slice(-3).reverse();
-    const aside = `<aside class="card side"><h2>선택한 범위</h2><div class="kv"><div><span>전체</span><b data-cnt="all">${c0.all}</b></div><div><span>학습 완료</span><b data-cnt="learned">${c0.learned}</b></div><div><span>취약 항목</span><b data-cnt="weak">${c0.weak}</b></div></div>${hist.length ? `<h2>최근 ${BY_NAME[by]} ${TYPE_NAME[type]} 테스트</h2><div class="list">${hist.map(testRow).join("")}</div>` : `<p class="muted small">이 유형의 테스트 기록이 아직 없어요.</p>`}</aside>`;
+    const aside = `<aside class="card side"><h2>선택한 범위</h2><div class="kv"><div><span>전체</span><b data-cnt="all">${c0.all}</b></div><div><span>학습 완료</span><b data-cnt="learned">${c0.learned}</b></div><div><span>취약 항목</span><b data-cnt="weak">${c0.weak}</b></div></div><h2>범위별 진행</h2><div class="kv progress">${cats.map((c) => { const items = pool(type, by, c.key); const n = learnedCount(items); return `<div><span>${c.name}</span><b>${n}<small class="muted">/${items.length}</small></b></div>`; }).join("")}</div>${hist.length ? `<h2>최근 ${BY_NAME[by]} ${TYPE_NAME[type]} 테스트</h2><div class="list">${hist.map(testRow).join("")}</div>` : ""}</aside>`;
     return `${back("#/test", "테스트")}<h1>${BY_NAME[by]} ${TYPE_NAME[type]} 테스트</h1><div class="two-col">
       <form id="test-form" class="card form" data-type="${type}" data-by="${by}">
         <label>범위<select name="key" id="t-key">${[{ key: "all", name: "전체" }, ...cats].map((c) => `<option value="${c.key}" ${c.key === preKey ? "selected" : ""}>${c.name}</option>`).join("")}</select></label>

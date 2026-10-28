@@ -289,7 +289,7 @@ mark.hl.idiom { background: var(--idiom-bg); border-bottom: 2px solid var(--idio
   .dash > h2 { margin-top: 0; }
   .dash .col { display: flex; flex-direction: column; gap: 0; }
   .study-card, .question, .feedback, .study-nav, .form, .result { max-width: 720px; }
-  .user-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .user-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
 }
 
 /* 테스트 설정: 데스크톱에서 폼 + 범위 현황 패널 */
@@ -301,4 +301,5 @@ mark.hl.idiom { background: var(--idiom-bg); border-bottom: 2px solid var(--idio
 .kv div:last-child { border-bottom: 0; }
 .kv span { color: var(--muted); font-size: 14px; }
 .kv b { font-weight: 500; font-size: 22px; }
+.kv.progress b { font-size: 16px; } .kv.progress div { padding: 7px 0; } .kv.progress b small { font-size: 13px; }
 @media (min-width: 1024px) { .two-col { grid-template-columns: minmax(0, 720px) 1fr; gap: 24px; align-items: start; } .two-col .form { max-width: none; } }
