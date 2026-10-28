@@ -126,6 +126,25 @@ window.Store = (function () {
   }
   function flushAll() { Object.keys(pending).forEach((id) => flush(id)); }
 
+  // 노래 전체 가사: 가족 공유(families/{code}/lyrics/{songId}). 로컬 캐시 + 세션 메모리 캐시(읽기 1회/곡).
+  const LK = (sid) => "tl.lyrics." + sid;
+  const lyricsCache = {};
+  async function getLyrics(sid) {
+    if (lyricsCache[sid] !== undefined) return lyricsCache[sid];
+    let v = lsGet(LK(sid), null);
+    if (mode === "cloud") {
+      try { const d = await db.collection("families").doc(family).collection("lyrics").doc(sid).get();
+        if (d.exists) { const c = d.data(); if (!v || (c.at || 0) >= (v.at || 0)) { v = c; lsSet(LK(sid), v); } } }
+      catch (e) { console.warn("가사 읽기 실패", e); }
+    }
+    lyricsCache[sid] = v; return v;
+  }
+  async function saveLyrics(sid, text, by) {
+    const v = { text: String(text || "").slice(0, 20000), by: by || "", at: Date.now() };
+    lsSet(LK(sid), v); lyricsCache[sid] = v;
+    if (mode === "cloud") { try { await db.collection("families").doc(family).collection("lyrics").doc(sid).set(v); } catch (e) { console.warn("가사 저장 실패", e); } }
+  }
+
   const setCurrent = (id) => (id ? lsSet(K.cur, id) : LS.removeItem(K.cur));
   const getCurrent = () => lsGet(K.cur, null);
   function exportAll() {
@@ -142,5 +161,5 @@ window.Store = (function () {
     flushAll();
   }
 
-  return { init, get mode() { return mode; }, get family() { return family; }, emptyProg, mergeProg, getUsers, saveUser, deleteUser, getProgress, peekProgress, saveProgress, flush, flushAll, setCurrent, getCurrent, exportAll, importAll };
+  return { init, get mode() { return mode; }, get family() { return family; }, emptyProg, mergeProg, getUsers, saveUser, deleteUser, getProgress, peekProgress, saveProgress, flush, flushAll, getLyrics, saveLyrics, setCurrent, getCurrent, exportAll, importAll };
 })();

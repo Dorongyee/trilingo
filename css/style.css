@@ -221,6 +221,28 @@ textarea { resize: vertical; min-height: 120px; }
 .video { position: relative; aspect-ratio: 16/9; border-radius: var(--radius); overflow: hidden; background: #000; box-shadow: var(--shadow); }
 .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .intro { font-size: .95rem; }
+/* 가사 목록 + 색칠 */
+.lyrics-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.legend { display: flex; gap: 6px; font-size: .8rem; }
+mark.hl { background: none; color: inherit; border-radius: 4px; padding: 0 3px; }
+mark.hl.grammar { background: color-mix(in srgb, var(--grammar) 20%, transparent); box-shadow: inset 0 -2px 0 var(--grammar); }
+mark.hl.vocab { background: color-mix(in srgb, var(--vocab) 20%, transparent); box-shadow: inset 0 -2px 0 var(--vocab); }
+mark.hl.idiom { background: color-mix(in srgb, var(--idiom) 20%, transparent); box-shadow: inset 0 -2px 0 var(--idiom); }
+.lyrics { padding: 10px 8px; }
+.lyric-line { padding: 3px 8px; }
+.lyric-line.plain { color: var(--muted); padding: 6px 18px; font-size: 1rem; line-height: 1.5; }
+.lyric-gap { height: 14px; }
+.lyric-btn { width: 100%; text-align: left; border: 0; border-left: 3px solid var(--primary); background: var(--primary-soft); padding: 8px 10px; border-radius: 10px; font-size: 1.05rem; line-height: 1.55; display: flex; gap: 8px; align-items: flex-start; cursor: pointer; color: var(--text); }
+.lyric-btn > span:first-child { flex: 1; }
+.lyric-btn .chev { color: var(--muted); font-size: .9rem; margin-top: 3px; }
+.lyric-line.learned .lyric-btn { border-left-color: var(--ok); }
+.lyric-line.open .lyric-btn { border-radius: 10px 10px 0 0; }
+.lyric-detail { border: 1px solid var(--border); border-top: 0; border-radius: 0 0 12px 12px; padding: 12px; background: var(--card); }
+.detail-head .tgt { font-size: 1.1rem; }
+.detail-head .ko { margin-top: 4px; }
+.detail-tools { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.lyrics-edit { margin-top: 12px; }
+.lyrics-edit summary { cursor: pointer; font-weight: 700; }
 .lines { display: grid; gap: 12px; }
 .line.learned { border-color: var(--ok); }
 .line-head { display: flex; align-items: flex-start; gap: 8px; }

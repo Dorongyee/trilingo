@@ -6,5 +6,9 @@ service cloud.firestore {
     match /families/{family}/users/{user} {
       allow read, write: if true;
     }
+    // 노래 전체 가사(가족이 붙여 넣어 공유)
+    match /families/{family}/lyrics/{song} {
+      allow read, write: if true;
+    }
   }
 }
