@@ -16,7 +16,7 @@
   const XP = { learnWord: 5, learnSentence: 8, testWord: 3, testSentence: 5, songLine: 2 };
   const TITLES = ["새싹", "입문자", "초보 여행자", "여행자", "탐험가", "현지인 친구", "통역사", "언어 마스터", "폴리글랏"];
   // 일본어는 가나를 못 읽는 가족을 위해 로마자(영문 발음)를 기본으로 켭니다. v: 설정 버전(마이그레이션용)
-  const DEFAULT_SHOW = { py: true, hira: false, kata: false, romaji: true, ipa: true, v: 2 };
+  const DEFAULT_SHOW = { py: true, hira: false, kata: false, romaji: true, ipa: true, v: 3 };
   const TYPE_NAME = { words: "단어", sentences: "문장" };
   const BY_NAME = { sit: "상황별", lv: "레벨별" };
   const NOTE_K = { grammar: "문법", vocab: "단어", idiom: "관용어구" };
@@ -509,7 +509,7 @@
     if (!u) return;
     const oldV = (u.show && u.show.v) || 1; // 병합 전 버전 확인(병합하면 기본값의 v가 들어가 마이그레이션이 안 됨)
     u.show = Object.assign({}, DEFAULT_SHOW, u.show || {});
-    if (oldV < 2) { u.show.romaji = true; u.show.hira = false; u.show.v = 2; Store.saveUser(u); } // 기존 사용자도 로마자 기본 켜기
+    if (oldV < 3) { u.show.romaji = true; u.show.hira = false; u.show.v = 3; Store.saveUser(u); } // 기존 사용자도 로마자 기본 켜기
     if (!u.langs || !u.langs.length) u.langs = ["en", "zh", "ja"];
     S.user = u;
     S.prog = await Store.getProgress(id);
