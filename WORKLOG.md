@@ -42,3 +42,9 @@
 - 참고: https://leevigong.tistory.com/50 → Leonxlnx/taste-skill (MIT). 저장소를 backup/_dl/taste-skill 에 받아 SKILL.md·references/app-screens.md 를 읽고 "앱 화면" 규칙을 수동 적용(자동 모드에서 외부 스크립트 실행·~/.claude/skills 설치는 차단됨).
 - 적용: 이모지 전면 제거(내비 아이콘 → 1.5px 아웃라인 SVG, 국기 → EN/ZH/JA 코드, 동물 아바타 → 이름 이니셜+개인 색조, 상황 아이콘 제거), 그라데이션·그림자 제거(1px 테두리/톤 차이), 기본 버튼 먹색(다크: 흰색), 색은 진행도·정답/오답 상태에만, 둥글기 20/10/999 체계, 아이콘 타일 → 카드 안 메뉴 행, KPI 4타일 → 한 카드 분할 스트립, 하단 내비 6→5개(복습은 홈 메뉴로), 서체 Pretendard Variable(jsdelivr) 로드, 다크 테마 true-black 토큰, 결과 메시지·캡션의 장식 문구 제거.
 - 확인: 배포 주소에서 홈·대시보드·학습 카드·테스트 설정·노래 화면(390px)과 대시보드(1280px) 스크린샷 검토. 이전 화면은 backup/review/before/. 수정 전 코드 backup/2026-10-28-v0.5/.
+
+## 2026-10-28 · v0.7 taste-skill 점검 도구로 전 화면 재점검
+- 스킬 설치: npx skills add … (사용자 실행) → .agents/skills/design-taste-frontend (+ .claude/skills 정션). lint.mjs·inspect.mjs 실행 가능해짐. .agents/.claude/skills-lock.json/.taste-skill 은 git 제외.
+- lint: FAIL 1(체크 글리프 ✓) → 제거, WARN(밑줄용 inset box-shadow 4건 → border, 시각 자릿수 padStart는 유지).
+- inspect(--app, 1440/768/390): 홈·대시보드·카테고리·학습카드·테스트설정·노래목록·노래상세·설정·복습 9화면. FAIL: 테스트 설정 다크모드 선택 칩 안 숫자 대비 2.1:1 → 수정. WARN: 데스크톱 빈 영역(홈·대시보드·카테고리·테스트 설정) → 캔버스 1120, 대시보드 2열, 카테고리 3열, 노래 4열, 테스트 설정에 범위 현황 패널(전체/완료/취약, 범위별 진행, 최근 테스트) 추가. 남은 경고: 홈(사용자 선택 화면의 여백)·노래 목록(30곡 중 첫 화면 14곡)·대시보드 하단 여백은 의도적 유지.
+- 점검용 딥링크 ?u=<사용자id> 추가(가족 개인 즐겨찾기로도 사용 가능).
