@@ -184,7 +184,7 @@
     const lw = learnedCount(TL_WORDS), ls = learnedCount(TL_SENTENCES), weak = weakItems().length;
     const recent = [...(p.tests || [])].slice(-3).reverse();
     const last = p.last;
-    return `
+    return `<div class="dash"><div class="col">
       <section class="card profile">
         <div class="profile-head">${avatarHtml(u)}<div><h1>${esc(u.name)}</h1><div class="muted">${flags(u.langs)}</div></div><a class="btn ghost small" href="#/settings">설정</a></div>
         ${xpBar(p)}
@@ -196,14 +196,16 @@
         <div class="stat"><b>${(p.tests || []).length}</b><span>테스트 횟수</span><a href="#/history" class="link small">기록</a></div>
       </div>
       ${last ? `<a class="card continue" href="#/learn/${last.type}/${last.by}/${last.key}"><span>이어서 학습</span><b>${BY_NAME[last.by]} ${TYPE_NAME[last.type]} · ${catName(last.by, last.key)}</b></a>` : ""}
+      ${recent.length ? `<h2>최근 테스트</h2><div class="card list">${recent.map(testRow).join("")}</div>` : ""}
+    </div><div class="col">
       <h2>학습</h2>${hubTiles("learn")}
-      <h2>테스트 & 노래</h2>
+      <h2>테스트 · 노래</h2>
       <div class="card menu">
         <a class="menu-row" href="#/test"><span><b>테스트</b><small>상황별 · 레벨별 단어와 문장</small></span><span class="chev">›</span></a>
         <a class="menu-row" href="#/songs"><span><b>노래로 배우기</b><small>${TL_SONGS.filter((s) => u.langs.includes(s.lang)).length}곡</small></span><span class="chev">›</span></a>
         <a class="menu-row" href="#/review"><span><b>취약 항목 복습</b><small>${weak}개</small></span><span class="chev">›</span></a>
       </div>
-      ${recent.length ? `<h2>최근 테스트</h2><div class="card list">${recent.map(testRow).join("")}</div>` : ""}`;
+    </div></div>`;
   }
   const testRow = (t) => `<div class="row"><div><b>${BY_NAME[t.by] || ""} ${TYPE_NAME[t.type] || ""} · ${t.key === "all" ? "전체" : (t.by === "sit" && SIT[t.key] ? SIT[t.key].name : t.by === "lv" ? "레벨 " + t.key : t.key === "weak" ? "취약 복습" : t.key)}</b><small class="muted">${fmtDate(t.d)} · ${t.mode === "type" ? "입력형" : "선택형"} · ${(t.langs || []).map((l) => (LANGS[l] ? LANGS[l].name : l)).join("·")}</small></div><span class="score ${t.score / t.total >= 0.8 ? "good" : t.score / t.total >= 0.5 ? "mid" : "low"}">${t.score}/${t.total}</span></div>`;
 
