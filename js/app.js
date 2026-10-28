@@ -4,9 +4,9 @@
 
   // ───────────────────────── 상수
   const LANGS = {
-    en: { name: "영어", flag: "EN", tts: "en-US", lang: "en" },
-    zh: { name: "중국어", flag: "ZH", tts: "zh-CN", lang: "zh-Hans" },
-    ja: { name: "일본어", flag: "JA", tts: "ja-JP", lang: "ja" },
+    en: { name: "영어", flag: "US", tts: "en-US", lang: "en" },
+    zh: { name: "중국어", flag: "CN", tts: "zh-CN", lang: "zh-Hans" },
+    ja: { name: "일본어", flag: "JP", tts: "ja-JP", lang: "ja" },
   };
   const LANG_ORDER = ["en", "zh", "ja"];
   const ITEMS = [...TL_WORDS, ...TL_SENTENCES];
