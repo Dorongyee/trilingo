@@ -366,7 +366,7 @@
     const groups = S.user.langs.map((l) => ({ l, songs: TL_SONGS.filter((s) => s.lang === l) })).filter((g) => g.songs.length);
     return `${back("#/dash", "홈")}<h1>🎵 노래로 배우기</h1><p class="muted">유튜브 원곡을 보면서 가사 속 문법·단어·관용어구를 익혀요. 가사는 줄마다 나열되고, 색칠된 줄을 누르면 설명이 열려요. 전체 가사는 노래 화면에서 한 번 붙여 넣으면 돼요.</p>
       ${groups.map((g) => `<h2>${LANGS[g.l].flag} ${LANGS[g.l].name}</h2><div class="song-grid">${g.songs.map((s) => { const sp = (S.prog.songs[s.id] || {}).lines || {}; const n = Object.keys(sp).length;
-        return `<a class="card song" href="#/songs/${s.id}"><img loading="lazy" src="https://i.ytimg.com/vi/${s.yt}/mqdefault.jpg" alt=""><div class="song-body"><b>${esc(s.title)}</b><small>${esc(s.artist)} · ${s.year}</small><small class="muted">레벨 ${s.lv} · ${n}/${s.lines.length} 구절 학습</small>${bar(n, s.lines.length)}</div></a>`; }).join("")}</div>`).join("")}`;
+        return `<a class="card song" href="#/songs/${s.id}"><img loading="lazy" src="https://i.ytimg.com/vi/${s.yt}/mqdefault.jpg" alt=""><div class="song-body"><b>${esc(s.title)}</b><small>${esc(s.artist)} · ${s.year}</small><small class="muted">레벨 ${s.lv} · ${n}/${s.lines.length + annotList(s.id).length} 구절 학습</small>${bar(n, s.lines.length + annotList(s.id).length)}</div></a>`; }).join("")}</div>`).join("")}`;
   }
 
   // ── 가사 줄 ↔ 해설 구절 매칭, 표현 색칠
@@ -414,6 +414,16 @@
       <ul class="notes">${line.notes.map((n) => `<li><span class="tag ${n.k}">${NOTE_K[n.k] || n.k}</span><b lang="${L.lang}">${esc(n.w)}</b><span>${esc(n.e)}</span></li>`).join("")}</ul>
     </div>`;
   }
+  // 붙여 넣은 가사 줄 ↔ data/annotations.js 해설 (줄 해시로 매칭)
+  const lineHash = (text) => { let h = 5381; for (const c of normL(text)) h = ((h * 33) ^ c.codePointAt(0)) >>> 0; return h.toString(36); };
+  const annotList = (songId) => ((window.TL_ANNOT || {})[songId] || []);
+  const annotFor = (songId, text) => annotList(songId).find((a) => a.h === lineHash(text)) || null;
+  function lyricRowAnnot(song, id, key, text, an) {
+    const sp = S.prog.songs[id] || { lines: {} }, L = LANGS[song.lang], open = S.songUI.open === key, lk = "h:" + an.h, done = !!(sp.lines && sp.lines[lk]);
+    const detail = open ? `<div class="lyric-detail"><div class="detail-head">${an.gist ? `<div class="ko">${esc(an.gist)}</div>` : ""}<div class="detail-tools">${ttsBtn(text, song.lang)}<button class="btn small ${done ? "done" : "outline"}" data-act="song-line" data-song="${id}" data-idx="${lk}">${done ? "✅ 학습 완료 (취소)" : "✓ 학습 완료 +" + XP.songLine + " XP"}</button></div></div>
+      <ul class="notes">${an.notes.map((n) => `<li><span class="tag ${n.k}">${NOTE_K[n.k] || n.k}</span><b lang="${L.lang}">${esc(n.w)}</b><span>${esc(n.e)}</span></li>`).join("")}</ul></div>` : "";
+    return `<div class="lyric-line annot ${done ? "learned" : ""} ${open ? "open" : ""}"><button class="lyric-btn" data-act="lyric-open" data-key="${key}" aria-expanded="${open}"><span lang="${L.lang}">${highlightText(text, an.notes, song.lang)}</span><span class="chev">${open ? "▾" : "▸"}</span></button>${detail}</div>`;
+  }
   function lyricRow(song, id, key, text, ai) {
     const sp = S.prog.songs[id] || { lines: {} }, L = LANGS[song.lang], open = S.songUI.open === key;
     const done = !!(sp.lines && sp.lines[ai]);
@@ -433,8 +443,10 @@
       body = `<div class="card lyrics">${text.split(/\r?\n/).map((raw, li) => {
         const t = raw.trim(); if (!t) return `<div class="lyric-gap"></div>`;
         const ai = matchAnnot(s, t);
-        if (ai < 0) return `<div class="lyric-line plain" lang="${L.lang}">${esc(t)}</div>`;
-        matched++; return lyricRow(s, id, String(li), t, ai);
+        if (ai >= 0) { matched++; return lyricRow(s, id, String(li), t, ai); }
+        const an = annotFor(id, t);
+        if (an) { matched++; return lyricRowAnnot(s, id, String(li), t, an); }
+        return `<div class="lyric-line plain" lang="${L.lang}">${esc(t)}</div>`;
       }).join("")}</div>
       <p class="muted small">색칠된 줄을 누르면 설명이 열려요. 해설 있는 줄 ${matched}개</p>`;
     } else {
@@ -447,7 +459,7 @@
       <p class="small"><a class="link" target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=${s.yt}">YouTube에서 열기 ↗</a> <span class="muted">(재생이 안 되면 여기로)</span></p>
       <p class="card intro">${esc(s.intro)}</p>
       <div class="toolbar">${pronToggleBar()}</div>
-      <div class="lyrics-head"><h2>가사 · 학습 ${learnedN}/${s.lines.length}</h2><div class="legend"><mark class="hl grammar">문법</mark><mark class="hl vocab">단어</mark><mark class="hl idiom">관용어구</mark></div></div>
+      <div class="lyrics-head"><h2>가사 · 학습 ${learnedN}/${s.lines.length + annotList(id).length}</h2><div class="legend"><mark class="hl grammar">문법</mark><mark class="hl vocab">단어</mark><mark class="hl idiom">관용어구</mark></div></div>
       ${body}
       <details class="card lyrics-edit" ${text.trim() ? "" : "open"}>
         <summary>${text.trim() ? "✏️ 가사 수정" : "📋 전체 가사 붙여 넣기"}</summary>
