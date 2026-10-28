@@ -4,3 +4,4 @@ Thumbs.db
 firebase-debug.log
 .agents/
 .claude/
+skills-lock.json
