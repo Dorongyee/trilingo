@@ -35,8 +35,20 @@ window.Kana = (function () {
   };
   const MACRON = { a: "ā", i: "ī", u: "ū", e: "ē", o: "ō" };
 
+  // 띄어쓰기된 요미는 토큰별로 변환: 조사 は→wa, へ→e, 단어 끝 は(こんにちは 등)→wa
+  const PARTICLE = { は: "wa", へ: "e" };
+  const ENDS_WA = ["こんにちは", "こんばんは"];
   function toRomaji(input) {
-    const s = toHiragana(input || "");
+    const src = toHiragana(input || "");
+    const PUNCT = { "、": ", ", "。": ". ", "！": "! ", "？": "? ", "・": " " };
+    return src.split(/(\s+|[、。！？・])/).map((tok) => (!tok ? "" : /^\s+$/.test(tok) ? tok : PUNCT[tok] !== undefined ? PUNCT[tok] : romajiToken(tok))).join("").replace(/ {2,}/g, " ").replace(/\s+$/, "");
+  }
+  function romajiToken(tok) {
+    if (PARTICLE[tok]) return PARTICLE[tok];
+    if (ENDS_WA.includes(tok)) return romajiCore(tok.slice(0, -1)) + "wa";
+    return romajiCore(tok);
+  }
+  function romajiCore(s) {
     let out = "";
     let i = 0;
     while (i < s.length) {
