@@ -37,3 +37,8 @@
 - 첫 적용: Die With A Smile (동훈 등록 가사 37줄 중 반복·감탄사 제외 전 줄 해설 11개 + 기존 핵심 구절 4개).
 - 절차: 가족이 가사 붙여 넣기 → Firestore lyrics 문서를 읽어(backup/review, 미커밋) 해시 계산 → annotations.js 작성 → 해시 전부 매칭되는지 스크립트 검사 → 배포.
 - 메인 화면: 소개 캡션·동기화 상태 문구 제거, "누가 공부할까요?" → "사용자 선택". 참고: GitHub Pages CDN 캐시 max-age 600 → 배포 후 최대 10분 지연, 확인 시 캐시 무시 새로고침 필요.
+
+## 2026-10-28 · v0.6 디자인 정리(taste-skill 규칙 적용)
+- 참고: https://leevigong.tistory.com/50 → Leonxlnx/taste-skill (MIT). 저장소를 backup/_dl/taste-skill 에 받아 SKILL.md·references/app-screens.md 를 읽고 "앱 화면" 규칙을 수동 적용(자동 모드에서 외부 스크립트 실행·~/.claude/skills 설치는 차단됨).
+- 적용: 이모지 전면 제거(내비 아이콘 → 1.5px 아웃라인 SVG, 국기 → EN/ZH/JA 코드, 동물 아바타 → 이름 이니셜+개인 색조, 상황 아이콘 제거), 그라데이션·그림자 제거(1px 테두리/톤 차이), 기본 버튼 먹색(다크: 흰색), 색은 진행도·정답/오답 상태에만, 둥글기 20/10/999 체계, 아이콘 타일 → 카드 안 메뉴 행, KPI 4타일 → 한 카드 분할 스트립, 하단 내비 6→5개(복습은 홈 메뉴로), 서체 Pretendard Variable(jsdelivr) 로드, 다크 테마 true-black 토큰, 결과 메시지·캡션의 장식 문구 제거.
+- 확인: 배포 주소에서 홈·대시보드·학습 카드·테스트 설정·노래 화면(390px)과 대시보드(1280px) 스크린샷 검토. 이전 화면은 backup/review/before/. 수정 전 코드 backup/2026-10-28-v0.5/.

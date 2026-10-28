@@ -132,7 +132,7 @@
   }
   function catName(by, key) {
     if (key === "all") return "전체";
-    return by === "sit" ? `${SIT[key].icon} ${SIT[key].name}` : TL_LEVELS.find((l) => String(l.key) === String(key)).name;
+    return by === "sit" ? SIT[key].name : TL_LEVELS.find((l) => String(l.key) === String(key)).name;
   }
   const categories = (by) => (by === "sit" ? TL_SITUATIONS.map((s) => ({ key: s.key, name: s.name, icon: s.icon })) : TL_LEVELS.map((l) => ({ key: String(l.key), name: l.name, icon: ["①", "②", "③"][l.key - 1], desc: l.desc })));
 
@@ -191,8 +191,8 @@
       <div class="stats">
         <div class="stat"><b>${lw}<small>/${TL_WORDS.length}</small></b><span>단어 학습</span>${bar(lw, TL_WORDS.length)}</div>
         <div class="stat"><b>${ls}<small>/${TL_SENTENCES.length}</small></b><span>문장 학습</span>${bar(ls, TL_SENTENCES.length)}</div>
-        <div class="stat"><b>${weak}</b><span>취약 항목</span><a href="#/review" class="link small">복습 →</a></div>
-        <div class="stat"><b>${(p.tests || []).length}</b><span>테스트 횟수</span><a href="#/history" class="link small">기록 →</a></div>
+        <div class="stat"><b>${weak}</b><span>취약 항목</span><a href="#/review" class="link small">복습</a></div>
+        <div class="stat"><b>${(p.tests || []).length}</b><span>테스트 횟수</span><a href="#/history" class="link small">기록</a></div>
       </div>
       ${last ? `<a class="card continue" href="#/learn/${last.type}/${last.by}/${last.key}"><span>이어서 학습</span><b>${BY_NAME[last.by]} ${TYPE_NAME[last.type]} · ${catName(last.by, last.key)}</b></a>` : ""}
       <h2>학습</h2>${hubTiles("learn")}
@@ -267,7 +267,7 @@
     const c0 = counts(preKey);
     return `${back("#/test", "테스트")}<h1>${BY_NAME[by]} ${TYPE_NAME[type]} 테스트</h1>
       <form id="test-form" class="card form" data-type="${type}" data-by="${by}">
-        <label>범위<select name="key" id="t-key">${[{ key: "all", name: "전체" }, ...cats].map((c) => `<option value="${c.key}" ${c.key === preKey ? "selected" : ""}>${c.icon ? c.icon + " " : ""}${c.name}</option>`).join("")}</select></label>
+        <label>범위<select name="key" id="t-key">${[{ key: "all", name: "전체" }, ...cats].map((c) => `<option value="${c.key}" ${c.key === preKey ? "selected" : ""}>${c.name}</option>`).join("")}</select></label>
         <div class="field"><span>출제 대상</span><div class="radio-col" id="t-scope">
           <label class="check"><input type="radio" name="scope" value="learned" ${c0.learned ? "checked" : "disabled"}> 학습 완료한 것만 <small class="muted">(<span data-cnt="learned">${c0.learned}</span>개)</small></label>
           <label class="check"><input type="radio" name="scope" value="weak" ${c0.weak ? "" : "disabled"}> 취약 항목만 <small class="muted">(<span data-cnt="weak">${c0.weak}</span>개)</small></label>
