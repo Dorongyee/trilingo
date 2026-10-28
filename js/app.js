@@ -4,12 +4,11 @@
 
   // ───────────────────────── 상수
   const LANGS = {
-    en: { name: "영어", flag: "🇺🇸", tts: "en-US", lang: "en" },
-    zh: { name: "중국어", flag: "🇨🇳", tts: "zh-CN", lang: "zh-Hans" },
-    ja: { name: "일본어", flag: "🇯🇵", tts: "ja-JP", lang: "ja" },
+    en: { name: "영어", flag: "EN", tts: "en-US", lang: "en" },
+    zh: { name: "중국어", flag: "ZH", tts: "zh-CN", lang: "zh-Hans" },
+    ja: { name: "일본어", flag: "JA", tts: "ja-JP", lang: "ja" },
   };
   const LANG_ORDER = ["en", "zh", "ja"];
-  const AVATARS = ["🐯", "🐼", "🦊", "🐰", "🐻", "🐨", "🦁", "🐸", "🐧", "🦄", "🐙", "🐳"];
   const ITEMS = [...TL_WORDS, ...TL_SENTENCES];
   const BYID = {}; ITEMS.forEach((i) => (BYID[i.id] = i));
   const SIT = {}; TL_SITUATIONS.forEach((s) => (SIT[s.key] = s));
@@ -32,7 +31,21 @@
   const go = (h) => { location.hash = h; };
   const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
   const fmtDate = (ts) => { const d = new Date(ts); return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
-  const flags = (langs) => (langs || []).map((l) => LANGS[l].flag).join(" ");
+  const flags = (langs) => (langs || []).map((l) => LANGS[l].name).join(" · ");
+  // 아바타: 이름 첫 글자 + 사용자별 고정 색조(이모지 대신)
+  const hueOf = (id) => { let h = 0; for (const c of String(id || "")) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+  const avatarHtml = (u, cls = "") => `<span class="avatar ${cls}" style="--h:${hueOf(u.id)}">${esc((u.name || "?").trim().slice(0, 1))}</span>`;
+  const ICON = {
+    speaker: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3l5 4V6L7 10H4z"/><path d="M15.5 9.5a3.5 3.5 0 0 1 0 5"/><path d="M18 7a7 7 0 0 1 0 10"/></svg>',
+    check: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>',
+    checkOn: '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="10"/><path d="m8.5 12.5 2.5 2.5 4.5-5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    home: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>',
+    book: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H4z"/><path d="M20 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></svg>',
+    test: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="m8.5 12 2 2 4-4"/></svg>',
+    music: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>',
+    gear: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2-1.2L14.2 3h-4.4l-.4 2.6a7 7 0 0 0-2 1.2l-2.3-.9-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-.9a7 7 0 0 0 2 1.2l.4 2.6h4.4l.4-2.6a7 7 0 0 0 2-1.2l2.3.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></svg>',
+  };
+  const checkIcon = (on) => (on ? ICON.checkOn : ICON.check);
 
   function levelInfo(xp) {
     let lv = 1, need = 100, rest = xp || 0;
@@ -97,10 +110,10 @@
     if (!p.length) return "";
     return `<div class="pron">${p.map((x) => `<span class="${x.cls}"${x.lang ? ` lang="${x.lang}"` : ""}>${esc(x.t)}</span>`).join('<span class="dot">·</span>')}</div>`;
   }
-  const ttsBtn = (text, lang) => `<button class="icon-btn tts" data-act="tts" data-lang="${lang}" data-text="${esc(text)}" title="발음 듣기" aria-label="발음 듣기">🔊</button>`;
-  const noteHtml = (item) => (item.note ? `<div class="note">💡 ${esc(item.note)}</div>` : "");
+  const ttsBtn = (text, lang) => `<button class="icon-btn tts" data-act="tts" data-lang="${lang}" data-text="${esc(text)}" title="발음 듣기" aria-label="발음 듣기">${ICON.speaker}</button>`;
+  const noteHtml = (item) => (item.note ? `<div class="note">${esc(item.note)}</div>` : "");
   function langRow(item, lang, opts = {}) {
-    return `<div class="lang-row"><span class="flag" title="${LANGS[lang].name}">${LANGS[lang].flag}</span><div class="lang-body"><div class="tgt" lang="${LANGS[lang].lang}">${esc(item[lang])}</div>${opts.noPron ? "" : pronHtml(item, lang)}</div>${ttsBtn(item[lang], lang)}</div>`;
+    return `<div class="lang-row"><span class="lcode" title="${LANGS[lang].name}">${LANGS[lang].flag}</span><div class="lang-body"><div class="tgt" lang="${LANGS[lang].lang}">${esc(item[lang])}</div>${opts.noPron ? "" : pronHtml(item, lang)}</div>${ttsBtn(item[lang], lang)}</div>`;
   }
   function pronToggleBar() {
     const sh = S.user.show, L = S.user.langs, b = [];
@@ -131,36 +144,35 @@
   const bar = (a, b) => `<div class="bar"><i style="width:${pct(a, b)}%"></i></div>`;
   const back = (href, label = "뒤로") => `<a class="back" href="${href}">‹ ${label}</a>`;
   const hubTiles = (base) => `
-    <div class="tiles">
-      <a class="tile" href="#/${base}/words/sit"><span class="ico">🗂️</span><b>상황별 단어</b><small>${TL_SITUATIONS.length}개 상황 · ${TL_WORDS.length}단어</small></a>
-      <a class="tile" href="#/${base}/sentences/sit"><span class="ico">💬</span><b>상황별 문장</b><small>${TL_SITUATIONS.length}개 상황 · ${TL_SENTENCES.length}문장</small></a>
-      <a class="tile" href="#/${base}/words/lv"><span class="ico">📶</span><b>레벨별 단어</b><small>레벨 1~3</small></a>
-      <a class="tile" href="#/${base}/sentences/lv"><span class="ico">🪜</span><b>레벨별 문장</b><small>레벨 1~3</small></a>
+    <div class="card menu">
+      <a class="menu-row" href="#/${base}/words/sit"><span><b>상황별 단어</b><small>${TL_SITUATIONS.length}개 상황 · ${TL_WORDS.length}단어</small></span><span class="chev">›</span></a>
+      <a class="menu-row" href="#/${base}/sentences/sit"><span><b>상황별 문장</b><small>${TL_SITUATIONS.length}개 상황 · ${TL_SENTENCES.length}문장</small></span><span class="chev">›</span></a>
+      <a class="menu-row" href="#/${base}/words/lv"><span><b>레벨별 단어</b><small>레벨 1 · 2 · 3</small></span><span class="chev">›</span></a>
+      <a class="menu-row" href="#/${base}/sentences/lv"><span><b>레벨별 문장</b><small>레벨 1 · 2 · 3</small></span><span class="chev">›</span></a>
     </div>`;
 
   // ───────────────────────── 화면: 홈(사용자 선택)
   function viewHome() {
     const cards = S.users.map((u) => {
       const L = levelInfo(Store.peekProgress(u.id).xp);
-      return `<button class="user-card" data-act="pick-user" data-id="${u.id}"><span class="avatar">${u.avatar}</span><b>${esc(u.name)}</b><small>Lv.${L.lv} ${L.title}</small><small>${flags(u.langs)}</small></button>`;
+      return `<button class="user-card" data-act="pick-user" data-id="${u.id}">${avatarHtml(u, "big")}<b>${esc(u.name)}</b><small>Lv.${L.lv} ${L.title}</small><small>${flags(u.langs)}</small></button>`;
     }).join("");
     return `
-      <section class="hero"><div class="logo">🌏</div><h1>트라이링고</h1></section>
+      <section class="hero"><h1>트라이링고</h1></section>
       <h2>사용자 선택</h2>
-      <div class="user-grid">${cards}<a class="user-card add" href="#/new"><span class="avatar">＋</span><b>새 학습자</b><small>프로필 만들기</small></a></div>
-      ${S.mode === "cloud" ? "" : `<p class="muted center small">📱 기록은 이 기기(브라우저)에만 저장됩니다.</p>`}`;
+      <div class="user-grid">${cards}<a class="user-card add" href="#/new"><span class="avatar big plus">+</span><b>새 학습자</b><small>프로필 만들기</small></a></div>
+      ${S.mode === "cloud" ? "" : `<p class="muted small">기록은 이 기기(브라우저)에만 저장됩니다.</p>`}`;
   }
 
   function viewNewUser(u) {
     const edit = !!u;
-    u = u || { name: "", avatar: AVATARS[Math.floor(Math.random() * AVATARS.length)], langs: ["en", "zh", "ja"] };
+    u = u || { name: "", avatar: "", langs: ["en", "zh", "ja"] };
     return `
       ${back(edit ? "#/settings" : "#/")}
       <h1>${edit ? "프로필 수정" : "새 학습자"}</h1>
       <form id="user-form" class="card form" data-edit="${edit ? 1 : 0}">
         <label>이름<input name="name" required maxlength="12" placeholder="예: 엄마, 민수" value="${esc(u.name)}" autocomplete="off"></label>
-        <div class="field"><span>아바타</span><div class="avatar-grid">${AVATARS.map((a) => `<label class="avatar-opt"><input type="radio" name="avatar" value="${a}" ${a === u.avatar ? "checked" : ""}><span>${a}</span></label>`).join("")}</div></div>
-        <div class="field"><span>배울 언어 (여러 개 선택 가능)</span><div class="check-row">${LANG_ORDER.map((l) => `<label class="check"><input type="checkbox" name="langs" value="${l}" ${u.langs.includes(l) ? "checked" : ""}> ${LANGS[l].flag} ${LANGS[l].name}</label>`).join("")}</div></div>
+        <div class="field"><span>배울 언어 (여러 개 선택 가능)</span><div class="check-row">${LANG_ORDER.map((l) => `<label class="check"><input type="checkbox" name="langs" value="${l}" ${u.langs.includes(l) ? "checked" : ""}> ${LANGS[l].name}</label>`).join("")}</div></div>
         <button class="btn primary big" type="submit">${edit ? "저장" : "시작하기"}</button>
       </form>`;
   }
@@ -173,7 +185,7 @@
     const last = p.last;
     return `
       <section class="card profile">
-        <div class="profile-head"><span class="avatar">${u.avatar}</span><div><h1>${esc(u.name)}</h1><div class="muted">${flags(u.langs)} ${u.langs.map((l) => LANGS[l].name).join(" · ")}</div></div><a class="btn ghost small" href="#/settings">설정</a></div>
+        <div class="profile-head">${avatarHtml(u)}<div><h1>${esc(u.name)}</h1><div class="muted">${flags(u.langs)}</div></div><a class="btn ghost small" href="#/settings">설정</a></div>
         ${xpBar(p)}
       </section>
       <div class="stats">
@@ -182,16 +194,17 @@
         <div class="stat"><b>${weak}</b><span>취약 항목</span><a href="#/review" class="link small">복습 →</a></div>
         <div class="stat"><b>${(p.tests || []).length}</b><span>테스트 횟수</span><a href="#/history" class="link small">기록 →</a></div>
       </div>
-      ${last ? `<a class="card continue" href="#/learn/${last.type}/${last.by}/${last.key}"><span>▶ 이어서 학습</span><b>${BY_NAME[last.by]} ${TYPE_NAME[last.type]} · ${catName(last.by, last.key)}</b></a>` : ""}
+      ${last ? `<a class="card continue" href="#/learn/${last.type}/${last.by}/${last.key}"><span>이어서 학습</span><b>${BY_NAME[last.by]} ${TYPE_NAME[last.type]} · ${catName(last.by, last.key)}</b></a>` : ""}
       <h2>학습</h2>${hubTiles("learn")}
       <h2>테스트 & 노래</h2>
-      <div class="tiles">
-        <a class="tile accent" href="#/test"><span class="ico">📝</span><b>테스트</b><small>상황별·레벨별 단어/문장</small></a>
-        <a class="tile accent" href="#/songs"><span class="ico">🎵</span><b>노래로 배우기</b><small>${TL_SONGS.filter((s) => u.langs.includes(s.lang)).length}곡</small></a>
+      <div class="card menu">
+        <a class="menu-row" href="#/test"><span><b>테스트</b><small>상황별 · 레벨별 단어와 문장</small></span><span class="chev">›</span></a>
+        <a class="menu-row" href="#/songs"><span><b>노래로 배우기</b><small>${TL_SONGS.filter((s) => u.langs.includes(s.lang)).length}곡</small></span><span class="chev">›</span></a>
+        <a class="menu-row" href="#/review"><span><b>취약 항목 복습</b><small>${weak}개</small></span><span class="chev">›</span></a>
       </div>
       ${recent.length ? `<h2>최근 테스트</h2><div class="card list">${recent.map(testRow).join("")}</div>` : ""}`;
   }
-  const testRow = (t) => `<div class="row"><div><b>${BY_NAME[t.by] || ""} ${TYPE_NAME[t.type] || ""} · ${t.key === "all" ? "전체" : (t.by === "sit" && SIT[t.key] ? SIT[t.key].name : t.by === "lv" ? "레벨 " + t.key : t.key === "weak" ? "취약 복습" : t.key)}</b><small class="muted">${fmtDate(t.d)} · ${t.mode === "type" ? "입력형" : "선택형"} · ${flags(t.langs)}</small></div><span class="score ${t.score / t.total >= 0.8 ? "good" : t.score / t.total >= 0.5 ? "mid" : "low"}">${t.score}/${t.total}</span></div>`;
+  const testRow = (t) => `<div class="row"><div><b>${BY_NAME[t.by] || ""} ${TYPE_NAME[t.type] || ""} · ${t.key === "all" ? "전체" : (t.by === "sit" && SIT[t.key] ? SIT[t.key].name : t.by === "lv" ? "레벨 " + t.key : t.key === "weak" ? "취약 복습" : t.key)}</b><small class="muted">${fmtDate(t.d)} · ${t.mode === "type" ? "입력형" : "선택형"} · ${(t.langs || []).map((l) => (LANGS[l] ? LANGS[l].name : l)).join("·")}</small></div><span class="score ${t.score / t.total >= 0.8 ? "good" : t.score / t.total >= 0.5 ? "mid" : "low"}">${t.score}/${t.total}</span></div>`;
 
   function viewHistory() {
     const tests = [...(S.prog.tests || [])].reverse();
@@ -219,10 +232,10 @@
     const head = `${back(`#/learn/${type}/${by}`, `${BY_NAME[by]} ${TYPE_NAME[type]}`)}
       <div class="study-head"><h1>${catName(by, key)}</h1><span class="muted">${n}/${items.length} 완료</span></div>
       ${bar(n, items.length)}
-      <div class="toolbar">${pronToggleBar()}<button class="chip alt" data-act="study-mode">${st.list ? "🃏 카드 보기" : "📋 목록 보기"}</button></div>`;
+      <div class="toolbar">${pronToggleBar()}<button class="chip alt" data-act="study-mode">${st.list ? "카드 보기" : "목록 보기"}</button></div>`;
     if (st.list) {
-      return head + `<div class="card list study-list">${items.map((x, i) => `<div class="row item ${isLearned(x.id) ? "learned" : ""}"><button class="check-btn" data-act="toggle-learned" data-id="${x.id}" aria-label="학습 완료 토글">${isLearned(x.id) ? "✅" : "⬜"}</button><button class="row-main" data-act="study-jump" data-idx="${i}"><b>${esc(x.ko)}</b><small>${S.user.langs.map((l) => `<span lang="${LANGS[l].lang}">${LANGS[l].flag} ${esc(x[l])}</span>`).join(" ")}</small></button></div>`).join("")}</div>
-        <div class="actions"><button class="btn primary" data-act="test-range" data-type="${type}" data-by="${by}" data-key="${key}">📝 이 범위 테스트</button></div>`;
+      return head + `<div class="card list study-list">${items.map((x, i) => `<div class="row item ${isLearned(x.id) ? "learned" : ""}"><button class="check-btn" data-act="toggle-learned" data-id="${x.id}" aria-label="학습 완료 토글">${checkIcon(isLearned(x.id))}</button><button class="row-main" data-act="study-jump" data-idx="${i}"><b>${esc(x.ko)}</b><small>${S.user.langs.map((l) => `<span lang="${LANGS[l].lang}">${esc(x[l])}</span>`).join("")}</small></button></div>`).join("")}</div>
+        <div class="actions"><button class="btn primary" data-act="test-range" data-type="${type}" data-by="${by}" data-key="${key}">이 범위 테스트</button></div>`;
     }
     return head + `
       <article class="card study-card ${isLearned(it.id) ? "learned" : ""}" id="study-card">
@@ -230,13 +243,13 @@
         <div class="ko">${esc(it.ko)}</div>
         <div class="langs">${S.user.langs.map((l) => langRow(it, l)).join("")}</div>
         ${noteHtml(it)}
-        <button class="btn ${isLearned(it.id) ? "done" : "primary"} big" data-act="toggle-learned" data-id="${it.id}">${isLearned(it.id) ? "✅ 학습 완료됨 (다시 누르면 취소)" : "✓ 학습 완료"}</button>
+        <button class="btn ${isLearned(it.id) ? "done" : "primary"} big" data-act="toggle-learned" data-id="${it.id}">${isLearned(it.id) ? "학습 완료 · 다시 누르면 취소" : "학습 완료"}</button>
       </article>
       <div class="study-nav">
         <button class="btn ghost" data-act="study-prev" ${st.idx === 0 ? "disabled" : ""}>‹ 이전</button>
         <button class="btn ghost" data-act="study-next" ${st.idx >= items.length - 1 ? "disabled" : ""}>다음 ›</button>
       </div>
-      <div class="actions"><button class="btn outline" data-act="test-range" data-type="${type}" data-by="${by}" data-key="${key}">📝 이 범위 테스트</button></div>
+      <div class="actions"><button class="btn outline" data-act="test-range" data-type="${type}" data-by="${by}" data-key="${key}">이 범위 테스트</button></div>
       <p class="hint muted small">← → 키 또는 좌우 스와이프로 넘길 수 있어요.</p>`;
   }
 
@@ -244,7 +257,7 @@
   function viewTestHub() {
     const weak = weakItems().length;
     return `${back("#/dash", "홈")}<h1>테스트</h1><p class="muted">기본적으로 "학습 완료"한 항목에서만 출제되어, 배운 것만 체계적으로 확인할 수 있어요.</p>${hubTiles("test")}
-      <div class="tiles one"><button class="tile accent" data-act="test-weak" ${weak ? "" : "disabled"}><span class="ico">🎯</span><b>취약 항목 테스트</b><small>${weak ? `틀린 적 있는 ${weak}개` : "아직 취약 항목이 없어요"}</small></button></div>`;
+      <div class="card menu"><button class="menu-row" data-act="test-weak" ${weak ? "" : "disabled"}><span><b>취약 항목 테스트</b><small>${weak ? `틀린 적 있는 ${weak}개` : "아직 취약 항목이 없어요"}</small></span><span class="chev">›</span></button></div>`;
   }
 
   function viewTestSetup(type, by) {
@@ -260,7 +273,7 @@
           <label class="check"><input type="radio" name="scope" value="weak" ${c0.weak ? "" : "disabled"}> 취약 항목만 <small class="muted">(<span data-cnt="weak">${c0.weak}</span>개)</small></label>
           <label class="check"><input type="radio" name="scope" value="all" ${c0.learned ? "" : "checked"}> 전체 <small class="muted">(<span data-cnt="all">${c0.all}</span>개)</small></label>
         </div></div>
-        <div class="field"><span>출제 언어</span><div class="check-row">${S.user.langs.map((l) => `<label class="check"><input type="checkbox" name="langs" value="${l}" checked> ${LANGS[l].flag} ${LANGS[l].name}</label>`).join("")}</div></div>
+        <div class="field"><span>출제 언어</span><div class="check-row">${S.user.langs.map((l) => `<label class="check"><input type="checkbox" name="langs" value="${l}" checked> ${LANGS[l].name}</label>`).join("")}</div></div>
         <div class="field"><span>문제 수</span><div class="check-row">${["5", "10", "20", "all"].map((n, i) => `<label class="check pill"><input type="radio" name="count" value="${n}" ${i === 1 ? "checked" : ""}> ${n === "all" ? "전부" : n + "문제"}</label>`).join("")}</div></div>
         <div class="field"><span>방식</span><div class="check-row">
           <label class="check pill"><input type="radio" name="mode" value="mc" checked> 4지선다</label>
@@ -316,8 +329,8 @@
     const q = T.qs[T.i], it = q.item, L = LANGS[q.lang];
     const answered = q.ok !== null;
     const prompt = q.dir === "ko2tg"
-      ? `<div class="q-label">${L.flag} ${L.name}로는?</div><div class="q-text">${esc(it.ko)}</div>`
-      : `<div class="q-label">${L.flag} 이 뜻은?</div><div class="q-text" lang="${L.lang}">${esc(it[q.lang])}</div>${pronHtml(it, q.lang)}<div class="center">${ttsBtn(it[q.lang], q.lang)}</div>`;
+      ? `<div class="q-label">${L.name}로는?</div><div class="q-text">${esc(it.ko)}</div>`
+      : `<div class="q-label">${L.name} · 이 뜻은?</div><div class="q-text" lang="${L.lang}">${esc(it[q.lang])}</div>${pronHtml(it, q.lang)}<div class="center">${ttsBtn(it[q.lang], q.lang)}</div>`;
     let body = "";
     if (T.opts.mode === "mc") {
       body = `<div class="choices">${q.choices.map((c, i) => {
@@ -327,10 +340,10 @@
     } else {
       body = `<form id="type-form" class="type-form"><input id="type-input" lang="${L.lang}" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${q.lang === "ja" ? "일본어 / 히라가나 / 로마자" : q.lang === "zh" ? "한자 또는 병음(성조 생략 가능)" : "영어로 입력"}" value="${esc(q.typed)}" ${answered ? "disabled" : ""}>${answered ? "" : `<button class="btn primary" type="submit">확인</button>`}</form>`;
     }
-    const fb = answered ? `<div class="feedback ${q.ok ? "ok" : "bad"}"><b>${q.ok ? "정답! 🎉" : "아쉬워요"}</b>${q.ok ? "" : `<div class="muted small">내 답: ${esc(q.typed || (q.chosen ? (q.dir === "ko2tg" ? BYID[q.chosen][q.lang] : BYID[q.chosen].ko) : ""))}</div>`}<div class="answer"><div class="ko">${esc(it.ko)}</div>${langRow(it, q.lang)}${noteHtml(it)}</div>
+    const fb = answered ? `<div class="feedback ${q.ok ? "ok" : "bad"}"><b>${q.ok ? "정답" : "오답"}</b>${q.ok ? "" : `<div class="muted small">내 답: ${esc(q.typed || (q.chosen ? (q.dir === "ko2tg" ? BYID[q.chosen][q.lang] : BYID[q.chosen].ko) : ""))}</div>`}<div class="answer"><div class="ko">${esc(it.ko)}</div>${langRow(it, q.lang)}${noteHtml(it)}</div>
         <button class="btn primary big" data-act="test-next">${T.i + 1 >= T.qs.length ? "결과 보기" : "다음 →"}</button></div>` : "";
     return `
-      <div class="test-top"><a class="back" href="#/test" data-act="test-quit">✕ 그만하기</a><span class="muted">${T.i + 1} / ${T.qs.length}</span></div>
+      <div class="test-top"><a class="back" href="#/test" data-act="test-quit">그만하기</a><span class="muted">${T.i + 1} / ${T.qs.length}</span></div>
       ${bar(T.i + (answered ? 1 : 0), T.qs.length)}
       <article class="card question">${prompt}${body}${fb}</article>
       ${T.opts.mode === "mc" && !answered ? `<p class="hint muted small">숫자 키 1~4로도 고를 수 있어요.</p>` : ""}`;
@@ -345,7 +358,7 @@
     return `
       <section class="card result">
         <div class="big-score">${score} <small>/ ${total}</small></div>
-        <div class="result-msg">${r === 1 ? "완벽해요! 🏆" : r >= 0.8 ? "훌륭해요! 🎉" : r >= 0.5 ? "좋아요, 조금만 더! 💪" : "다시 복습해 볼까요? 📚"}</div>
+        <div class="result-msg">${r === 1 ? "모두 맞혔어요" : r >= 0.8 ? "잘했어요" : r >= 0.5 ? "조금만 더" : "다시 복습해 볼까요"}</div>
         <div class="muted">+${T.xpGain} XP</div>${xpBar(S.prog)}
       </section>
       ${wrong.length ? `<h2>틀린 항목 (${wrong.length})</h2><div class="card list">${wrong.map((q) => `<div class="row col"><b>${esc(q.item.ko)}</b>${langRow(q.item, q.lang)}</div>`).join("")}</div>
@@ -358,14 +371,14 @@
     const items = weakItems();
     return `${back("#/dash", "홈")}<h1>취약 항목 복습</h1><p class="muted">테스트에서 틀린 횟수가 맞은 횟수보다 많거나 같은 항목이에요. 다시 맞히면 자연히 빠져요.</p>
       ${items.length ? `${pronToggleBar()}<div class="card list">${items.map((x) => { const s = stat(x.id); return `<div class="row col"><div class="row-head"><b>${esc(x.ko)}</b><span class="tag bad">정답 ${s[0]} · 오답 ${s[1]}</span></div>${S.user.langs.map((l) => langRow(x, l)).join("")}${noteHtml(x)}</div>`; }).join("")}</div>
-      <div class="actions"><button class="btn primary big" data-act="test-weak">🎯 취약 항목 테스트</button></div>` : `<p class="card center">👍 취약 항목이 없어요!</p>`}`;
+      <div class="actions"><button class="btn primary big" data-act="test-weak">취약 항목 테스트</button></div>` : `<p class="card center">취약 항목이 없어요.</p>`}`;
   }
 
   // ───────────────────────── 화면: 노래
   function viewSongs() {
     const groups = S.user.langs.map((l) => ({ l, songs: TL_SONGS.filter((s) => s.lang === l) })).filter((g) => g.songs.length);
-    return `${back("#/dash", "홈")}<h1>🎵 노래로 배우기</h1><p class="muted">유튜브 원곡을 보면서 가사 속 문법·단어·관용어구를 익혀요. 가사는 줄마다 나열되고, 색칠된 줄을 누르면 설명이 열려요. 전체 가사는 노래 화면에서 한 번 붙여 넣으면 돼요.</p>
-      ${groups.map((g) => `<h2>${LANGS[g.l].flag} ${LANGS[g.l].name}</h2><div class="song-grid">${g.songs.map((s) => { const sp = (S.prog.songs[s.id] || {}).lines || {}; const n = Object.keys(sp).length;
+    return `${back("#/dash", "홈")}<h1>노래로 배우기</h1><p class="muted">유튜브 원곡을 보면서 가사 속 문법·단어·관용어구를 익혀요. 가사는 줄마다 나열되고, 색칠된 줄을 누르면 설명이 열려요. 전체 가사는 노래 화면에서 한 번 붙여 넣으면 돼요.</p>
+      ${groups.map((g) => `<h2>${LANGS[g.l].name}</h2><div class="song-grid">${g.songs.map((s) => { const sp = (S.prog.songs[s.id] || {}).lines || {}; const n = Object.keys(sp).length;
         return `<a class="card song" href="#/songs/${s.id}"><img loading="lazy" src="https://i.ytimg.com/vi/${s.yt}/mqdefault.jpg" alt=""><div class="song-body"><b>${esc(s.title)}</b><small>${esc(s.artist)} · ${s.year}</small><small class="muted">레벨 ${s.lv} · ${n}/${s.lines.length + annotList(s.id).length} 구절 학습</small>${bar(n, s.lines.length + annotList(s.id).length)}</div></a>`; }).join("")}</div>`).join("")}`;
   }
 
@@ -410,7 +423,7 @@
     const done = !!(sp.lines && sp.lines[i]);
     return `<div class="lyric-detail">
       <div class="detail-head"><div class="tgt" lang="${L.lang}">${highlightText(line.t, line.notes, song.lang)}</div>${pronHtml({ ipa: line.r, py: line.r, yomi: line.r }, song.lang)}<div class="ko">${esc(line.ko)}</div>
-        <div class="detail-tools">${ttsBtn(line.t, song.lang)}<button class="btn small ${done ? "done" : "outline"}" data-act="song-line" data-song="${id}" data-idx="${i}">${done ? "✅ 학습 완료 (취소)" : "✓ 학습 완료 +" + XP.songLine + " XP"}</button></div></div>
+        <div class="detail-tools">${ttsBtn(line.t, song.lang)}<button class="btn small ${done ? "done" : "outline"}" data-act="song-line" data-song="${id}" data-idx="${i}">${done ? "학습 완료 · 취소" : "학습 완료 +" + XP.songLine + " XP"}</button></div></div>
       <ul class="notes">${line.notes.map((n) => `<li><span class="tag ${n.k}">${NOTE_K[n.k] || n.k}</span><b lang="${L.lang}">${esc(n.w)}</b><span>${esc(n.e)}</span></li>`).join("")}</ul>
     </div>`;
   }
@@ -420,14 +433,14 @@
   const annotFor = (songId, text) => annotList(songId).find((a) => a.h === lineHash(text)) || null;
   function lyricRowAnnot(song, id, key, text, an) {
     const sp = S.prog.songs[id] || { lines: {} }, L = LANGS[song.lang], open = S.songUI.open === key, lk = "h:" + an.h, done = !!(sp.lines && sp.lines[lk]);
-    const detail = open ? `<div class="lyric-detail"><div class="detail-head">${an.gist ? `<div class="ko">${esc(an.gist)}</div>` : ""}<div class="detail-tools">${ttsBtn(text, song.lang)}<button class="btn small ${done ? "done" : "outline"}" data-act="song-line" data-song="${id}" data-idx="${lk}">${done ? "✅ 학습 완료 (취소)" : "✓ 학습 완료 +" + XP.songLine + " XP"}</button></div></div>
+    const detail = open ? `<div class="lyric-detail"><div class="detail-head">${an.gist ? `<div class="ko">${esc(an.gist)}</div>` : ""}<div class="detail-tools">${ttsBtn(text, song.lang)}<button class="btn small ${done ? "done" : "outline"}" data-act="song-line" data-song="${id}" data-idx="${lk}">${done ? "학습 완료 · 취소" : "학습 완료 +" + XP.songLine + " XP"}</button></div></div>
       <ul class="notes">${an.notes.map((n) => `<li><span class="tag ${n.k}">${NOTE_K[n.k] || n.k}</span><b lang="${L.lang}">${esc(n.w)}</b><span>${esc(n.e)}</span></li>`).join("")}</ul></div>` : "";
-    return `<div class="lyric-line annot ${done ? "learned" : ""} ${open ? "open" : ""}"><button class="lyric-btn" data-act="lyric-open" data-key="${key}" aria-expanded="${open}"><span lang="${L.lang}">${highlightText(text, an.notes, song.lang)}</span><span class="chev">${open ? "▾" : "▸"}</span></button>${detail}</div>`;
+    return `<div class="lyric-line annot ${done ? "learned" : ""} ${open ? "open" : ""}"><button class="lyric-btn" data-act="lyric-open" data-key="${key}" aria-expanded="${open}"><span lang="${L.lang}">${highlightText(text, an.notes, song.lang)}</span><span class="chev">${open ? "−" : "+"}</span></button>${detail}</div>`;
   }
   function lyricRow(song, id, key, text, ai) {
     const sp = S.prog.songs[id] || { lines: {} }, L = LANGS[song.lang], open = S.songUI.open === key;
     const done = !!(sp.lines && sp.lines[ai]);
-    return `<div class="lyric-line annot ${done ? "learned" : ""} ${open ? "open" : ""}"><button class="lyric-btn" data-act="lyric-open" data-key="${key}" aria-expanded="${open}"><span lang="${L.lang}">${highlightText(text, song.lines[ai].notes, song.lang)}</span><span class="chev">${open ? "▾" : "▸"}</span></button>${open ? lineDetail(song, ai, id) : ""}</div>`;
+    return `<div class="lyric-line annot ${done ? "learned" : ""} ${open ? "open" : ""}"><button class="lyric-btn" data-act="lyric-open" data-key="${key}" aria-expanded="${open}"><span lang="${L.lang}">${highlightText(text, song.lines[ai].notes, song.lang)}</span><span class="chev">${open ? "−" : "+"}</span></button>${open ? lineDetail(song, ai, id) : ""}</div>`;
   }
   async function viewSong(id) {
     const s = TL_SONGS.find((x) => x.id === id);
@@ -454,16 +467,16 @@
       <p class="muted small">지금은 핵심 구절만 보여요. 아래에 전체 가사를 붙여 넣으면 가사가 순서대로 표시되고, 해설이 있는 줄은 자동으로 색칠돼요.</p>`;
     }
     return `${back("#/songs", "노래")}
-      <div class="song-head"><h1>${esc(s.title)}</h1><div class="muted">${L.flag} ${esc(s.artist)} · ${s.year} · 레벨 ${s.lv}</div></div>
+      <div class="song-head"><h1>${esc(s.title)}</h1><div class="muted">${esc(s.artist)} · ${s.year} · ${L.name} · 레벨 ${s.lv}</div></div>
       <div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${s.yt}" title="${esc(s.title)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
-      <p class="small"><a class="link" target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=${s.yt}">YouTube에서 열기 ↗</a> <span class="muted">(재생이 안 되면 여기로)</span></p>
+      <p class="small"><a class="link" target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=${s.yt}">YouTube에서 열기</a> <span class="muted">(재생이 안 되면 여기로)</span></p>
       <p class="card intro">${esc(s.intro)}</p>
       <div class="toolbar">${pronToggleBar()}</div>
       <div class="lyrics-head"><h2>가사 · 학습 ${learnedN}/${s.lines.length + annotList(id).length}</h2><div class="legend"><mark class="hl grammar">문법</mark><mark class="hl vocab">단어</mark><mark class="hl idiom">관용어구</mark></div></div>
       ${body}
       <details class="card lyrics-edit" ${text.trim() ? "" : "open"}>
-        <summary>${text.trim() ? "✏️ 가사 수정" : "📋 전체 가사 붙여 넣기"}</summary>
-        <p class="muted small">가사 사이트에서 복사해 한 줄에 한 소절씩 붙여 넣으세요. <a class="link" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title + " " + s.artist + " 가사")}">🔎 가사 검색 ↗</a></p>
+        <summary>${text.trim() ? "가사 수정" : "전체 가사 붙여 넣기"}</summary>
+        <p class="muted small">가사 사이트에서 복사해 한 줄에 한 소절씩 붙여 넣으세요. <a class="link" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(s.title + " " + s.artist + " 가사")}">가사 검색</a></p>
         <textarea id="lyrics-memo" rows="12" placeholder="가사 붙여 넣기…">${esc(text || sp.lyrics || "")}</textarea>
         <div class="actions"><button class="btn primary" data-act="song-save-lyrics" data-song="${id}">저장</button></div>
       </details>`;
@@ -474,20 +487,20 @@
     const u = S.user;
     return `${back("#/dash", "홈")}<h1>설정</h1>
       <section class="card">
-        <div class="profile-head"><span class="avatar">${u.avatar}</span><div><b>${esc(u.name)}</b><div class="muted small">${flags(u.langs)}</div></div><a class="btn ghost small" href="#/edit">수정</a></div>
+        <div class="profile-head">${avatarHtml(u)}<div><b>${esc(u.name)}</b><div class="muted small">${flags(u.langs)}</div></div><a class="btn ghost small" href="#/edit">수정</a></div>
       </section>
       <h2>발음 표기 기본값</h2>
       <section class="card"><p class="muted small">학습·테스트·노래 화면 상단에서도 바로 켜고 끌 수 있어요.</p>${pronToggleBar()}</section>
       <h2>저장</h2>
       <section class="card">
-        <p>${S.mode === "cloud" ? `☁️ Firebase 동기화 켜짐 · 가족 코드 <code>${esc(Store.family)}</code>` : "📱 이 기기(브라우저)에만 저장 중. 다른 기기와 공유하려면 README의 Firebase 설정을 하거나, 아래 내보내기/가져오기를 쓰세요."}</p>
-        <div class="actions"><button class="btn outline" data-act="export">⬇ 백업 파일 내보내기</button><label class="btn outline">⬆ 백업 가져오기<input type="file" id="import-file" accept="application/json" hidden></label></div>
+        <p>${S.mode === "cloud" ? `Firebase 동기화 켜짐 · 가족 코드 <code>${esc(Store.family)}</code>` : "이 기기(브라우저)에만 저장 중. 다른 기기와 공유하려면 README의 Firebase 설정을 하거나, 아래 내보내기/가져오기를 쓰세요."}</p>
+        <div class="actions"><button class="btn outline" data-act="export">백업 파일 내보내기</button><label class="btn outline">백업 가져오기<input type="file" id="import-file" accept="application/json" hidden></label></div>
       </section>
       <h2>사용자</h2>
       <section class="card">
         <div class="actions"><a class="btn ghost" href="#/" data-act="switch-user">사용자 전환</a><button class="btn danger" data-act="delete-user">이 사용자 삭제</button></div>
       </section>
-      <p class="muted small center">트라이링고 · 단어 ${TL_WORDS.length} · 문장 ${TL_SENTENCES.length} · 노래 ${TL_SONGS.length}</p>`;
+      <p class="muted small">트라이링고 · 단어 ${TL_WORDS.length} · 문장 ${TL_SENTENCES.length} · 노래 ${TL_SONGS.length}</p>`;
   }
 
   // ───────────────────────── 네비게이션
@@ -497,9 +510,9 @@
     if (!S.user) { nav.innerHTML = ""; chip.innerHTML = ""; document.body.classList.remove("has-nav"); return; }
     document.body.classList.add("has-nav");
     const L = levelInfo(S.prog.xp);
-    chip.innerHTML = `<a href="#/dash" class="chip-user"><span>${S.user.avatar}</span><b>${esc(S.user.name)}</b><small>Lv.${L.lv}</small></a>`;
-    const items = [["dash", "🏠", "홈"], ["learn", "📖", "학습"], ["test", "📝", "테스트"], ["songs", "🎵", "노래"], ["review", "🎯", "복습"], ["settings", "⚙️", "설정"]];
-    nav.innerHTML = items.map(([r, ic, n]) => `<a href="#/${r}" class="${route === r || (r === "learn" && route === "learn") ? "active" : ""}"><span>${ic}</span><small>${n}</small></a>`).join("");
+    chip.innerHTML = `<a href="#/dash" class="chip-user">${avatarHtml(S.user, "sm")}<b>${esc(S.user.name)}</b><small>Lv.${L.lv}</small></a>`;
+    const items = [["dash", ICON.home, "홈"], ["learn", ICON.book, "학습"], ["test", ICON.test, "테스트"], ["songs", ICON.music, "노래"], ["settings", ICON.gear, "설정"]];
+    nav.innerHTML = items.map(([r, ic, n]) => `<a href="#/${r}" class="${route === r || (r === "dash" && (route === "review" || route === "history")) ? "active" : ""}"><span>${ic}</span><small>${n}</small></a>`).join("");
   }
 
   // ───────────────────────── 라우터
@@ -617,12 +630,12 @@
       const fd = new FormData(f);
       const name = (fd.get("name") || "").trim(); if (!name) return;
       const langs = fd.getAll("langs"); if (!langs.length) return toast("언어를 하나 이상 선택하세요");
-      if (f.dataset.edit === "1") { Object.assign(S.user, { name, avatar: fd.get("avatar"), langs }); await Store.saveUser(S.user); toast("저장했어요"); go("/settings"); }
+      if (f.dataset.edit === "1") { Object.assign(S.user, { name, langs }); await Store.saveUser(S.user); toast("저장했어요"); go("/settings"); }
       else {
         // 같은 이름이 가족 목록에 이미 있으면(다른 기기에서 만든 프로필) 새로 만들지 않고 그 기록에 연결
         const existing = S.users.find((x) => (x.name || "").trim().toLowerCase() === name.toLowerCase());
         if (existing) { toast(`"${existing.name}" 기존 기록을 이어서 사용해요`); await pickUser(existing.id); go("/dash"); return; }
-        const u = { id: uid(), name, avatar: fd.get("avatar"), langs, show: { ...DEFAULT_SHOW }, created: Date.now() }; await Store.saveUser(u); S.users = await Store.getUsers(); if (!S.users.some((x) => x.id === u.id)) S.users.push(u); await pickUser(u.id); go("/dash"); }
+        const u = { id: uid(), name, avatar: "", langs, show: { ...DEFAULT_SHOW }, created: Date.now() }; await Store.saveUser(u); S.users = await Store.getUsers(); if (!S.users.some((x) => x.id === u.id)) S.users.push(u); await pickUser(u.id); go("/dash"); }
     }
     if (f.id === "test-form") {
       e.preventDefault();
