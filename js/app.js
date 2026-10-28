@@ -145,10 +145,10 @@
       return `<button class="user-card" data-act="pick-user" data-id="${u.id}"><span class="avatar">${u.avatar}</span><b>${esc(u.name)}</b><small>Lv.${L.lv} ${L.title}</small><small>${flags(u.langs)}</small></button>`;
     }).join("");
     return `
-      <section class="hero"><div class="logo">🌏</div><h1>트라이링고</h1><p>영어 · 중국어 · 일본어를 한 번에, 가족 모두 함께.</p></section>
-      <h2>누가 공부할까요?</h2>
+      <section class="hero"><div class="logo">🌏</div><h1>트라이링고</h1></section>
+      <h2>사용자 선택</h2>
       <div class="user-grid">${cards}<a class="user-card add" href="#/new"><span class="avatar">＋</span><b>새 학습자</b><small>프로필 만들기</small></a></div>
-      <p class="muted center small">${S.mode === "cloud" ? `☁️ 가족 기록 동기화 중 (코드: ${esc(Store.family)})` : "📱 기록은 이 기기(브라우저)에 저장됩니다. 가족과 기록을 공유하려면 README의 Firebase 설정을 하세요."}</p>`;
+      ${S.mode === "cloud" ? "" : `<p class="muted center small">📱 기록은 이 기기(브라우저)에만 저장됩니다.</p>`}`;
   }
 
   function viewNewUser(u) {
