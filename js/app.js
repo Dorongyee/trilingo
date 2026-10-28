@@ -495,8 +495,9 @@
   async function pickUser(id) {
     const u = S.users.find((x) => x.id === id);
     if (!u) return;
+    const oldV = (u.show && u.show.v) || 1; // 병합 전 버전 확인(병합하면 기본값의 v가 들어가 마이그레이션이 안 됨)
     u.show = Object.assign({}, DEFAULT_SHOW, u.show || {});
-    if ((u.show.v || 1) < 2) { u.show.romaji = true; u.show.v = 2; Store.saveUser(u); } // 기존 사용자도 로마자 기본 켜기
+    if (oldV < 2) { u.show.romaji = true; u.show.hira = false; u.show.v = 2; Store.saveUser(u); } // 기존 사용자도 로마자 기본 켜기
     if (!u.langs || !u.langs.length) u.langs = ["en", "zh", "ja"];
     S.user = u;
     S.prog = await Store.getProgress(id);
