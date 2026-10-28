@@ -169,6 +169,9 @@ textarea { resize: vertical; min-height: 120px; }
 .pron { color: var(--muted); font-size: .95rem; margin-top: 2px; display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
 .pron .dot { opacity: .5; }
 .pron .ipa { font-family: "Charis SIL", "Doulos SIL", "Gentium", "Segoe UI", "Noto Sans", serif; }
+.note { font-size: .9rem; color: var(--muted); background: var(--accent-soft); border-left: 3px solid var(--accent); padding: 10px 12px; border-radius: 10px; margin: -6px 0 16px; line-height: 1.5; }
+@media (prefers-color-scheme: dark) { .note { color: var(--text); } }
+.feedback .note, .row .note { margin: 8px 0 0; }
 .study-nav { display: flex; gap: 10px; margin-top: 12px; }
 .study-nav .btn { flex: 1; }
 .hint { text-align: center; }

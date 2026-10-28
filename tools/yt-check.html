@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>노래 영상 임베드 점검</title>
+  <style>body{font-family:sans-serif;padding:16px} .ok{color:green} .bad{color:red;font-weight:bold} #players{display:flex;flex-wrap:wrap;gap:4px} #players div{width:160px;height:90px}</style>
+</head>
+<body>
+  <h1>노래 영상 임베드 점검</h1>
+  <p>배포 주소에서 열어야 정확합니다(파일로 열면 referrer 오류 153). 각 곡의 유튜브 영상이 사이트 안에서 재생 가능한지 확인합니다.</p>
+  <pre id="out">로딩 중…</pre>
+  <div id="players"></div>
+  <script src="../data/songs.js"></script>
+  <script>
+    const out = document.getElementById("out");
+    const result = {};
+    const render = () => { out.textContent = TL_SONGS.map((s) => `${(result[s.yt] || "…").padEnd(12)} ${s.yt}  ${s.id}  ${s.title}`).join("\n") + `\n\nDONE=${Object.keys(result).length}/${TL_SONGS.length}`; };
+    render();
+    const tag = document.createElement("script"); tag.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(tag);
+    window.onYouTubeIframeAPIReady = function () {
+      TL_SONGS.forEach((s) => {
+        const d = document.createElement("div"); d.id = "p-" + s.id; document.getElementById("players").appendChild(d);
+        // 임베드 금지 영상은 재생을 시도해야 오류(101/150)가 납니다 → 음소거 자동재생 시도
+        new YT.Player(d.id, { videoId: s.yt, width: 160, height: 90, playerVars: { mute: 1 }, events: {
+          onReady: (e) => { if (!result[s.yt]) result[s.yt] = "READY"; render(); try { e.target.mute(); e.target.playVideo(); } catch (err) {} },
+          onStateChange: (e) => { if (e.data === YT.PlayerState.PLAYING) { result[s.yt] = "PLAYABLE"; render(); e.target.pauseVideo(); } },
+          onError: (e) => { result[s.yt] = "ERROR " + e.data; render(); },
+        } });
+      });
+    };
+  </script>
+</body>
+</html>

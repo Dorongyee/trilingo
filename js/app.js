@@ -15,7 +15,8 @@
   const SIT = {}; TL_SITUATIONS.forEach((s) => (SIT[s.key] = s));
   const XP = { learnWord: 5, learnSentence: 8, testWord: 3, testSentence: 5, songLine: 2 };
   const TITLES = ["새싹", "입문자", "초보 여행자", "여행자", "탐험가", "현지인 친구", "통역사", "언어 마스터", "폴리글랏"];
-  const DEFAULT_SHOW = { py: true, hira: true, kata: false, romaji: false, ipa: true };
+  // 일본어는 가나를 못 읽는 가족을 위해 로마자(영문 발음)를 기본으로 켭니다. v: 설정 버전(마이그레이션용)
+  const DEFAULT_SHOW = { py: true, hira: false, kata: false, romaji: true, ipa: true, v: 2 };
   const TYPE_NAME = { words: "단어", sentences: "문장" };
   const BY_NAME = { sit: "상황별", lv: "레벨별" };
   const NOTE_K = { grammar: "문법", vocab: "단어", idiom: "관용어구" };
@@ -97,6 +98,7 @@
     return `<div class="pron">${p.map((x) => `<span class="${x.cls}"${x.lang ? ` lang="${x.lang}"` : ""}>${esc(x.t)}</span>`).join('<span class="dot">·</span>')}</div>`;
   }
   const ttsBtn = (text, lang) => `<button class="icon-btn tts" data-act="tts" data-lang="${lang}" data-text="${esc(text)}" title="발음 듣기" aria-label="발음 듣기">🔊</button>`;
+  const noteHtml = (item) => (item.note ? `<div class="note">💡 ${esc(item.note)}</div>` : "");
   function langRow(item, lang, opts = {}) {
     return `<div class="lang-row"><span class="flag" title="${LANGS[lang].name}">${LANGS[lang].flag}</span><div class="lang-body"><div class="tgt" lang="${LANGS[lang].lang}">${esc(item[lang])}</div>${opts.noPron ? "" : pronHtml(item, lang)}</div>${ttsBtn(item[lang], lang)}</div>`;
   }
@@ -227,6 +229,7 @@
         <div class="counter">${st.idx + 1} / ${items.length}${isWeak(it.id) ? ' <span class="tag bad">취약</span>' : ""}</div>
         <div class="ko">${esc(it.ko)}</div>
         <div class="langs">${S.user.langs.map((l) => langRow(it, l)).join("")}</div>
+        ${noteHtml(it)}
         <button class="btn ${isLearned(it.id) ? "done" : "primary"} big" data-act="toggle-learned" data-id="${it.id}">${isLearned(it.id) ? "✅ 학습 완료됨 (다시 누르면 취소)" : "✓ 학습 완료"}</button>
       </article>
       <div class="study-nav">
@@ -320,11 +323,11 @@
       body = `<div class="choices">${q.choices.map((c, i) => {
         const txt = q.dir === "ko2tg" ? c[q.lang] : c.ko;
         const cls = answered ? (c.id === it.id ? "ok" : q.chosen === c.id ? "bad" : "dim") : "";
-        return `<button class="choice ${cls}" data-act="choose" data-id="${c.id}" ${answered ? "disabled" : ""}><span class="num">${i + 1}</span><span class="choice-text" ${q.dir === "ko2tg" ? `lang="${L.lang}"` : ""}>${esc(txt)}</span>${answered && q.dir === "ko2tg" && c.id === it.id ? pronHtml(c, q.lang) : ""}</button>`; }).join("")}</div>`;
+        return `<button class="choice ${cls}" data-act="choose" data-id="${c.id}" ${answered ? "disabled" : ""}><span class="num">${i + 1}</span><span class="choice-text" ${q.dir === "ko2tg" ? `lang="${L.lang}"` : ""}>${esc(txt)}</span>${q.dir === "ko2tg" ? pronHtml(c, q.lang) : ""}</button>`; }).join("")}</div>`;
     } else {
       body = `<form id="type-form" class="type-form"><input id="type-input" lang="${L.lang}" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${q.lang === "ja" ? "일본어 / 히라가나 / 로마자" : q.lang === "zh" ? "한자 또는 병음(성조 생략 가능)" : "영어로 입력"}" value="${esc(q.typed)}" ${answered ? "disabled" : ""}>${answered ? "" : `<button class="btn primary" type="submit">확인</button>`}</form>`;
     }
-    const fb = answered ? `<div class="feedback ${q.ok ? "ok" : "bad"}"><b>${q.ok ? "정답! 🎉" : "아쉬워요"}</b>${q.ok ? "" : `<div class="muted small">내 답: ${esc(q.typed || (q.chosen ? (q.dir === "ko2tg" ? BYID[q.chosen][q.lang] : BYID[q.chosen].ko) : ""))}</div>`}<div class="answer"><div class="ko">${esc(it.ko)}</div>${langRow(it, q.lang)}</div>
+    const fb = answered ? `<div class="feedback ${q.ok ? "ok" : "bad"}"><b>${q.ok ? "정답! 🎉" : "아쉬워요"}</b>${q.ok ? "" : `<div class="muted small">내 답: ${esc(q.typed || (q.chosen ? (q.dir === "ko2tg" ? BYID[q.chosen][q.lang] : BYID[q.chosen].ko) : ""))}</div>`}<div class="answer"><div class="ko">${esc(it.ko)}</div>${langRow(it, q.lang)}${noteHtml(it)}</div>
         <button class="btn primary big" data-act="test-next">${T.i + 1 >= T.qs.length ? "결과 보기" : "다음 →"}</button></div>` : "";
     return `
       <div class="test-top"><a class="back" href="#/test" data-act="test-quit">✕ 그만하기</a><span class="muted">${T.i + 1} / ${T.qs.length}</span></div>
@@ -354,7 +357,7 @@
   function viewReview() {
     const items = weakItems();
     return `${back("#/dash", "홈")}<h1>취약 항목 복습</h1><p class="muted">테스트에서 틀린 횟수가 맞은 횟수보다 많거나 같은 항목이에요. 다시 맞히면 자연히 빠져요.</p>
-      ${items.length ? `${pronToggleBar()}<div class="card list">${items.map((x) => { const s = stat(x.id); return `<div class="row col"><div class="row-head"><b>${esc(x.ko)}</b><span class="tag bad">정답 ${s[0]} · 오답 ${s[1]}</span></div>${S.user.langs.map((l) => langRow(x, l)).join("")}</div>`; }).join("")}</div>
+      ${items.length ? `${pronToggleBar()}<div class="card list">${items.map((x) => { const s = stat(x.id); return `<div class="row col"><div class="row-head"><b>${esc(x.ko)}</b><span class="tag bad">정답 ${s[0]} · 오답 ${s[1]}</span></div>${S.user.langs.map((l) => langRow(x, l)).join("")}${noteHtml(x)}</div>`; }).join("")}</div>
       <div class="actions"><button class="btn primary big" data-act="test-weak">🎯 취약 항목 테스트</button></div>` : `<p class="card center">👍 취약 항목이 없어요!</p>`}`;
   }
 
@@ -430,6 +433,7 @@
     const u = S.users.find((x) => x.id === id);
     if (!u) return;
     u.show = Object.assign({}, DEFAULT_SHOW, u.show || {});
+    if ((u.show.v || 1) < 2) { u.show.romaji = true; u.show.v = 2; Store.saveUser(u); } // 기존 사용자도 로마자 기본 켜기
     if (!u.langs || !u.langs.length) u.langs = ["en", "zh", "ja"];
     S.user = u;
     S.prog = await Store.getProgress(id);
