@@ -7,3 +7,5 @@
 - 콘텐츠: 단어 132(10개 상황, 레벨1 82/레벨2 33/레벨3 17), 문장 60, 노래 9곡(영: Die With A Smile, BIRDS OF A FEATHER, APT. / 일: Lemon, Pretender, アイドル / 중: 告白气球, 光年之外, 小幸运).
 - 검증: node --check 전 파일 통과, id 중복 없음, 필수 필드 누락 없음, 로마자 변환 샘플 정상.
 - 알려진 제약: 유튜브 ID 중 光年之外(KqVN10ICaE0)·小幸运(_sQSXwdtxlY)은 공식 채널 여부 미확인 → 재생 안 되면 data/songs.js의 yt 값만 교체. Firestore 보안은 가족 코드 기반(로그인 없음).
+- 배포: https://github.com/Dorongyee/trilingo → https://dorongyee.github.io/trilingo/ (GitHub Pages, main 루트). 배포 주소에서 프로필 생성·노래 화면 유튜브 임베드(APT.) 재생 가능 확인. 9곡 영상 ID 모두 oEmbed 200 응답.
+- 수정: header backdrop-filter 가 하단 고정 내비를 헤더 안에 가두는 버그 → 제거. html scroll-padding-bottom 추가.
